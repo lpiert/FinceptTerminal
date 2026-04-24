@@ -28,7 +28,7 @@ info() { echo -e "  ${YELLOW}$1${NC}"; }
 
 echo ""
 echo "================================================"
-echo "  Fincept Terminal v4.0.1 — Setup"
+echo "  Fincept Terminal v4.0.2 — Setup"
 echo "  Pinned: Qt ${QT_VERSION} | CMake ${CMAKE_MIN}+ | Python ${PYTHON_MIN}+"
 [ "$CI_MODE" = true ] && echo "  (CI mode — skipping interactive steps)"
 echo "================================================"
@@ -38,7 +38,7 @@ echo ""
 OS="$(uname -s)"
 case "$OS" in
     Linux*)  PLATFORM="linux" ; QT_KIT="gcc_64"     ; PRESET="linux-release" ;;
-    Darwin*) PLATFORM="macos" ; QT_KIT="macos"      ; PRESET="macos-release" ;;
+    Darwin*) PLATFORM="macos" ; QT_KIT="clang_64"   ; PRESET="macos-release" ;;
     *)       fail "Unsupported OS: $OS" ;;
 esac
 echo "Platform: $OS"
@@ -118,8 +118,7 @@ elif [ "$PLATFORM" = "macos" ]; then
             install_name_tool -change /usr/lib/libexpat.1.dylib "$BREW_EXPAT_LIB" "$so_path" 2>/dev/null || true
             codesign --force --sign - "$so_path" 2>/dev/null || true
         done
-    fi
-fi
+    fifi
 ok
 
 # ── Step 2: Verify compiler version ─────────────────────────
@@ -207,12 +206,7 @@ cd "$APP_DIR"
 echo "[6/7] Configuring (preset: $PRESET)..."
 # Override the preset's default CMAKE_PREFIX_PATH with the one we just set,
 # so the build picks up the aqtinstall location rather than ~/Qt/6.8.3/...
-EXTRA_ARGS=""
-if [ "$PLATFORM" = "macos" ] && [ -d "/opt/homebrew/opt/openssl@3" ]; then
-    EXTRA_ARGS="-DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@3"
-fi
-
-cmake --preset "$PRESET" -DCMAKE_PREFIX_PATH="$QT_PREFIX" $EXTRA_ARGS \
+cmake --preset "$PRESET" -DCMAKE_PREFIX_PATH="$QT_PREFIX" \
     || fail "CMake configure failed. See error above."
 ok
 

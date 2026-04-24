@@ -244,7 +244,7 @@ QWidget* NewsDetailPanel::build_content_view() {
 
         // Build a safe filename from headline
         QString safe = current_article_.headline;
-        safe = safe.replace(QRegularExpression("[^a-zA-Z0-9_\\- ]"), "").simplified();
+        safe.replace(QRegularExpression("[^a-zA-Z0-9_\\- ]"), "").simplified();
         safe.replace(' ', '_');
         if (safe.length() > 60)
             safe = safe.left(60);

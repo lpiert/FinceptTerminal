@@ -3,7 +3,6 @@
 #include "storage/sqlite/CacheDatabase.h"
 
 #include <QSqlQuery>
-#include <utility>
 
 namespace fincept {
 
@@ -62,7 +61,7 @@ QVariant CacheManager::get(const QString& key) const {
     if (r.is_err())
         return {};
 
-    QSqlQuery q = std::move(r.value());
+    QSqlQuery q = r.value();
     if (!q.next())
         return {};
 
@@ -87,7 +86,7 @@ bool CacheManager::has(const QString& key) const {
     if (r.is_err())
         return false;
 
-    QSqlQuery q = std::move(r.value());
+    QSqlQuery q = r.value();
     return q.next();
 }
 
@@ -131,7 +130,7 @@ int CacheManager::entry_count() const {
     if (r.is_err())
         return 0;
 
-    QSqlQuery q = std::move(r.value());
+    QSqlQuery q = r.value();
     return q.next() ? q.value(0).toInt() : 0;
 }
 

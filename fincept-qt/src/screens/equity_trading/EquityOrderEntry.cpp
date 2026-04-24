@@ -572,7 +572,7 @@ void EquityOrderEntry::fetch_margin_async() {
     const QString bid = broker_id_;
     QPointer<EquityOrderEntry> self = this;
 
-    (void)QtConcurrent::run([self, bid, order]() {
+    QtConcurrent::run([self, bid, order]() {
         auto* broker = trading::BrokerRegistry::instance().get(bid);
         if (!broker) {
             if (self)

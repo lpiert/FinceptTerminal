@@ -1,11 +1,11 @@
-// LlmConfigSection.cpp — LLM provider configuration panel (Qt port)
+// LlmConfigSection.cpp 鈥?LLM provider configuration panel (Qt port)
 
 //
 // Core lifecycle: provider catalog statics (KNOWN_PROVIDERS, default_base_url,
 // fallback_models), reload, build_ui (tab layout), and the small show_status
 // helper. Tab implementations live in:
-//   - LlmConfigSection_Providers.cpp — provider panel + save/test handlers
-//   - LlmConfigSection_Profiles.cpp  — profile panel + CRUD handlers
+//   - LlmConfigSection_Providers.cpp 鈥?provider panel + save/test handlers
+//   - LlmConfigSection_Profiles.cpp  鈥?profile panel + CRUD handlers
 #include "screens/settings/LlmConfigSection.h"
 
 #include "services/llm/LlmService.h"
@@ -101,14 +101,14 @@ QStringList LlmConfigSection::fallback_models(const QString& provider) {
                 "moonshot-v1-32k-vision-preview",
                 "moonshot-v1-128k-vision-preview"};
     if (p == "ollama")
-        return {}; // Local provider — models fetched live from /api/tags. No fallback so the
+        return {}; // Local provider 鈥?models fetched live from /api/tags. No fallback so the
                    // combo only shows what the user actually has installed locally.
     if (p == "xai")
         return {"grok-4-latest", "grok-4", "grok-3", "grok-3-mini"};
     if (p == "fincept")
         return {"MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"};
     if (p == "astraflow" || p == "astraflow_cn")
-        // Astraflow by UCloud — OpenAI-compatible aggregator supporting 200+ models.
+        // Astraflow by UCloud 鈥?OpenAI-compatible aggregator supporting 200+ models.
         // A non-exhaustive starter list; full list fetchable via Fetch button.
         return {"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o3-mini",
                 "claude-sonnet-4-5-20250514", "claude-3-5-sonnet-20241022",
@@ -189,7 +189,7 @@ void LlmConfigSection::show_status(const QString& msg, bool error) {
 }
 
 // ============================================================================
-// Retranslation — covers widgets built across all three TUs (this file +
+// Retranslation 鈥?covers widgets built across all three TUs (this file +
 // LlmConfigSection_Providers.cpp + LlmConfigSection_Profiles.cpp). The split
 // TUs do not own a retranslateUi; this single override re-applies every fixed
 // label there.
@@ -209,7 +209,7 @@ void LlmConfigSection::retranslateUi() {
         tab_widget_->setTabText(1, tr("PROFILES"));
     }
 
-    // ── Providers tab ─────────────────────────────────────────────────────────
+    // 鈹€鈹€ Providers tab 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     if (provider_list_title_) provider_list_title_->setText(tr("Providers"));
     if (add_btn_)             add_btn_->setText(tr("+ Add"));
     if (delete_btn_)          delete_btn_->setText(tr("Remove"));
@@ -223,7 +223,7 @@ void LlmConfigSection::retranslateUi() {
     if (provider_edit_)       provider_edit_->setPlaceholderText(tr("e.g. openai"));
     if (model_combo_ && model_combo_->lineEdit())
         model_combo_->lineEdit()->setPlaceholderText(tr("Select or type model..."));
-    if (base_url_edit_)       base_url_edit_->setPlaceholderText(tr("Optional — leave empty for default"));
+    if (base_url_edit_)       base_url_edit_->setPlaceholderText(tr("Optional 鈥?leave empty for default"));
 
     if (fetch_btn_) fetch_btn_->setText(tr("Fetch"));
     if (tools_check_) {
@@ -247,7 +247,7 @@ void LlmConfigSection::retranslateUi() {
     if (system_prompt_)     system_prompt_->setPlaceholderText(tr("Optional system prompt for the LLM..."));
     if (save_global_btn_)   save_global_btn_->setText(tr("Save Global Settings"));
 
-    // ── Profiles tab ──────────────────────────────────────────────────────────
+    // 鈹€鈹€ Profiles tab 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     if (profile_list_title_) profile_list_title_->setText(tr("PROFILES"));
     if (profile_list_hint_)  profile_list_hint_->setText(tr("A profile = named LLM config you can assign to any agent or team."));
     if (profile_add_btn_)    profile_add_btn_->setText(tr("+ New"));

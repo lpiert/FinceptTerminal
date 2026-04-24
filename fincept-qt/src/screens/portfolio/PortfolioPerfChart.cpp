@@ -6,7 +6,6 @@
 
 #include <QAreaSeries>
 #include <QChart>
-#include <QDateTime>
 #include <QDateTimeAxis>
 #include <QEvent>
 #include <QGuiApplication>
@@ -14,7 +13,6 @@
 #include <QLineSeries>
 #include <QMouseEvent>
 #include <QScreen>
-#include <QTimeZone>
 #include <QVBoxLayout>
 #include <QValueAxis>
 
@@ -27,7 +25,7 @@ static const QStringList kPeriods = {"1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"}
 
 namespace fincept::screens {
 
-// ── CrosshairChartView ────────────────────────────────────────────────────────
+// 鈹€鈹€ CrosshairChartView 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 CrosshairChartView::CrosshairChartView(QChart* chart, QWidget* parent) : QChartView(chart, parent) {
     setMouseTracking(true);
@@ -69,7 +67,7 @@ void CrosshairChartView::update_crosshair(const QPoint& widget_pos) {
         return;
     }
 
-    // Map widget pixel → chart value
+    // Map widget pixel 鈫?chart value
     const QPointF chart_val = chart()->mapToValue(QPointF(widget_pos));
 
     // Snap to nearest point by x (ms timestamp)
@@ -118,7 +116,7 @@ void CrosshairChartView::hide_crosshair() {
     tooltip_->hide();
 }
 
-// ── PortfolioPerfChart ────────────────────────────────────────────────────────
+// 鈹€鈹€ PortfolioPerfChart 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 PortfolioPerfChart::PortfolioPerfChart(QWidget* parent) : QWidget(parent) {
     build_ui();
@@ -131,7 +129,7 @@ void PortfolioPerfChart::build_ui() {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // Unified panel header — PERFORMANCE title + period buttons + benchmark/% toggles
+    // Unified panel header 鈥?PERFORMANCE title + period buttons + benchmark/% toggles
     // packed into the right-side controls slot.
     auto header = make_panel_header(tr("PERFORMANCE"), this);
     title_label_ = header.title_label;
@@ -160,7 +158,7 @@ void PortfolioPerfChart::build_ui() {
     }
 
     // Benchmark toggle (label updates when set_benchmark_history fires with a
-    // non-SPY symbol — e.g. ^GSPTSE for CAD portfolios).
+    // non-SPY symbol 鈥?e.g. ^GSPTSE for CAD portfolios).
     benchmark_btn_ = new QPushButton(benchmark_symbol_);
     benchmark_btn_->setFixedSize(60, 22);
     benchmark_btn_->setCheckable(true);
@@ -180,7 +178,7 @@ void PortfolioPerfChart::build_ui() {
 
     // Indexed-mode toggle: switches the y-axis from currency value to
     // percent-indexed (base 100). Required for fair benchmark comparison
-    // when the portfolio and benchmark are in different currencies — without
+    // when the portfolio and benchmark are in different currencies 鈥?without
     // this, comparing CAD NAV against USD SPY closes is meaningless.
     indexed_btn_ = new QPushButton("%");
     indexed_btn_->setFixedSize(28, 22);
@@ -237,7 +235,7 @@ void PortfolioPerfChart::build_ui() {
     cost_basis_label_ = new QLabel;
     cost_basis_label_->setStyleSheet(
         QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_TERTIARY()));
-    cost_basis_label_->setToolTip(tr("Total cost basis — the dashed horizontal line on the chart."));
+    cost_basis_label_->setToolTip(tr("Total cost basis 鈥?the dashed horizontal line on the chart."));
     info_bar->addWidget(cost_basis_label_);
 
     info_bar->addStretch();
@@ -329,7 +327,7 @@ void PortfolioPerfChart::update_period_buttons_enabled() {
     const int span_days = earliest.isValid() ? earliest.daysTo(today) : 0;
     for (auto* btn : period_btns_) {
         const QString p = btn->text();
-        // Daily snapshots only — 1D needs intraday data we don't capture.
+        // Daily snapshots only 鈥?1D needs intraday data we don't capture.
         bool feasible = true;
         if (p == "1D")
             feasible = false; // explicitly unsupported with daily snapshots
@@ -338,7 +336,7 @@ void PortfolioPerfChart::update_period_buttons_enabled() {
         // Other periods are always allowed: backfill kicks in when clicked.
         btn->setEnabled(feasible);
         btn->setToolTip(feasible ? QString()
-                                 : tr("Needs intraday data — daily snapshots only."));
+                                 : tr("Needs intraday data 鈥?daily snapshots only."));
     }
 }
 
@@ -369,7 +367,7 @@ void PortfolioPerfChart::update_chart() {
     const double live_nav = summary_.total_market_value;
     const double cost_basis = summary_.total_cost_basis;
 
-    // ── Determine cutoff date from selected period ────────────────────────────
+    // 鈹€鈹€ Determine cutoff date from selected period 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     QDate cutoff = QDate::currentDate();
     if (current_period_ == "1D")
         cutoff = cutoff.addDays(-1);
@@ -388,7 +386,7 @@ void PortfolioPerfChart::update_chart() {
     else
         cutoff = cutoff.addYears(-10); // ALL
 
-    // ── Filter snapshots (already sorted ascending by set_snapshots) ─────────
+    // 鈹€鈹€ Filter snapshots (already sorted ascending by set_snapshots) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     QVector<portfolio::PortfolioSnapshot> filtered;
     filtered.reserve(snapshots_.size());
     for (const auto& s : snapshots_) {
@@ -397,7 +395,7 @@ void PortfolioPerfChart::update_chart() {
             filtered.append(s);
     }
 
-    // ── Build raw NAV series in absolute currency value ──────────────────────
+    // 鈹€鈹€ Build raw NAV series in absolute currency value 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     QVector<QPointF> nav_pts;       // (ms_utc, NAV)
     nav_pts.reserve(filtered.size() + 1);
     double period_baseline = 0; // first snapshot value within window
@@ -412,7 +410,7 @@ void PortfolioPerfChart::update_chart() {
         if (nav_pts.last().x() < now_ms)
             nav_pts.append(QPointF(static_cast<double>(now_ms), live_nav));
     } else {
-        // No real history yet — render a clean cost→NAV reference segment.
+        // No real history yet 鈥?render a clean cost鈫扤AV reference segment.
         // (Backfill is auto-triggered on import / first metrics call.)
         period_baseline = cost_basis > 0 ? cost_basis : live_nav;
         const qint64 yest = QDateTime::currentDateTimeUtc().addDays(-1).toMSecsSinceEpoch();
@@ -421,11 +419,11 @@ void PortfolioPerfChart::update_chart() {
         nav_pts.append(QPointF(static_cast<double>(now_ms), live_nav));
     }
 
-    // ── Period P&L is *always* relative to the period baseline ───────────────
+    // 鈹€鈹€ Period P&L is *always* relative to the period baseline 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     const double period_pnl = live_nav - period_baseline;
     const double period_pnl_pct = period_baseline > 0 ? (period_pnl / period_baseline) * 100.0 : 0.0;
 
-    // ── Convert series to display space (currency value vs. base-100 indexed) ─
+    // 鈹€鈹€ Convert series to display space (currency value vs. base-100 indexed) 鈹€
     auto to_display = [&](double v) -> double {
         if (!indexed_mode_)
             return v;
@@ -471,18 +469,18 @@ void PortfolioPerfChart::update_chart() {
     chart->addSeries(area);
     chart->addSeries(nav_line);
 
-    // ── Cost basis reference line (per-day, from replay snapshots) ───────────
+    // 鈹€鈹€ Cost basis reference line (per-day, from replay snapshots) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     // Skipped in indexed mode (where the period baseline IS the reference at 100).
     // Each snapshot now carries its own cost basis (BUYs add, SELLs reduce by
     // weighted-average cost), so the cost line is a real step-shaped series
-    // that rises whenever the user added capital — not a flat horizontal at
+    // that rises whenever the user added capital 鈥?not a flat horizontal at
     // today's cost.
     QLineSeries* cost_line = nullptr;
     if (!indexed_mode_) {
         cost_line = new QLineSeries;
         cost_line->setName("Cost basis");
 
-        // Map snapshot_date → total_cost_basis for the filtered window. Each
+        // Map snapshot_date 鈫?total_cost_basis for the filtered window. Each
         // nav_pts x-coordinate is a ms_utc timestamp matching a snapshot date;
         // pair them up and append a point per day so the line steps with the
         // actual cost-basis trajectory. The synthesized "now" point at the
@@ -513,7 +511,7 @@ void PortfolioPerfChart::update_chart() {
         }
     }
 
-    // ── Axes ──────────────────────────────────────────────────────────────────
+    // 鈹€鈹€ Axes 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     auto* x_axis = new QDateTimeAxis;
     if (current_period_ == "1D" || current_period_ == "1W")
         x_axis->setFormat("MMM dd");
@@ -552,11 +550,11 @@ void PortfolioPerfChart::update_chart() {
 
     chart_view_->set_series_data(nav_line->points(), indexed_mode_ ? QStringLiteral("idx") : currency_);
 
-    // ── Benchmark overlay ─────────────────────────────────────────────────────
+    // 鈹€鈹€ Benchmark overlay 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     if (show_benchmark_ && nav_line->count() >= 2) {
         if (spy_dates_.isEmpty() || spy_closes_.isEmpty()) {
             nav_label_->setText(nav_label_->text() +
-                                tr("  |  %1: loading…").arg(benchmark_symbol_));
+                                tr("  |  %1: loading鈥?).arg(benchmark_symbol_));
         } else {
             const QDate start_date = QDateTime::fromMSecsSinceEpoch(
                 static_cast<qint64>(nav_line->at(0).x()), QTimeZone::UTC).date();
@@ -614,7 +612,7 @@ void PortfolioPerfChart::update_chart() {
         }
     }
 
-    // ── Info labels ───────────────────────────────────────────────────────────
+    // 鈹€鈹€ Info labels 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     const char* pnl_color = period_pnl_pct >= 0 ? ui::colors::POSITIVE : ui::colors::NEGATIVE;
     period_change_label_->setText(QString("%1  %2%3%")
                                       .arg(current_period_)
@@ -651,7 +649,7 @@ void PortfolioPerfChart::retranslateUi() {
     if (benchmark_btn_)    benchmark_btn_->setToolTip(tr("Overlay benchmark index (auto-selected by portfolio currency)"));
     if (indexed_btn_)      indexed_btn_->setToolTip(tr("Indexed view: rebase portfolio and benchmark to 100 at the start of\n"
                                                        "the selected period. Use when comparing different currencies."));
-    if (cost_basis_label_) cost_basis_label_->setToolTip(tr("Total cost basis — the dashed horizontal line on the chart."));
+    if (cost_basis_label_) cost_basis_label_->setToolTip(tr("Total cost basis 鈥?the dashed horizontal line on the chart."));
 
     // update_period_buttons_enabled() re-installs the localised tooltip on the
     // disabled 1D button; update_chart() re-renders all info-bar dynamic
@@ -663,7 +661,7 @@ void PortfolioPerfChart::retranslateUi() {
 void PortfolioPerfChart::refresh_theme() {
     setStyleSheet(QString("background:%1;").arg(ui::colors::BG_BASE()));
 
-    // -2 gives ~11px on the default font scale (was -3 ≈ 10px).
+    // -2 gives ~11px on the default font scale (was -3 鈮?10px).
     // Square corners (was border-radius:2px) per DESIGN_SYSTEM rule 9.1.
     const QString bsz = QString::number(ui::fonts::font_px(-2));
     // Re-style period buttons

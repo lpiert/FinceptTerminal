@@ -5,20 +5,16 @@
 #include "screens/polymarket/PolymarketPriceChart.h"
 #include "ui/theme/Theme.h"
 
-#include <QComboBox>
 #include <QDateTime>
-#include <QTimeZone>
 #include <QHBoxLayout>
 #include <QHeaderView>
-#include <QLineEdit>
 #include <QScrollArea>
 #include <QVBoxLayout>
 
 namespace fincept::screens::polymarket {
 
 using namespace fincept::ui;
-namespace pmx = fincept::services::polymarket;
-using namespace fincept::services::prediction;
+using namespace fincept::services::polymarket;
 
 static const char* OUTCOME_COLORS[] = {"#00D66F", "#FF3B3B", "#FF8800", "#4F8EF7", "#A855F7"};
 
@@ -32,16 +28,13 @@ void PolymarketDetailPanel::build_ui() {
     vl->setContentsMargins(0, 0, 0, 0);
     vl->setSpacing(0);
 
-    // ── Tab bar ───────────────────────────────────────────────────────────
+    // Tab bar
     auto* tab_bar = new QWidget(this);
-    tab_bar->setObjectName("polyDetailTabBar");
-    tab_bar->setFixedHeight(34);
+    tab_bar->setFixedHeight(32);
     tab_bar->setStyleSheet(
-        QString("QWidget#polyDetailTabBar { background: %1; border-bottom: 1px solid %2; }")
-            .arg(colors::BG_RAISED(), colors::BORDER_DIM()));
-
+        QString("background: %1; border-bottom: 1px solid %2;").arg(colors::BG_RAISED(), colors::BORDER_DIM()));
     auto* thl = new QHBoxLayout(tab_bar);
-    thl->setContentsMargins(0, 0, 0, 0);
+    thl->setContentsMargins(8, 0, 8, 0);
     thl->setSpacing(0);
 
     const QStringList tab_names = {
@@ -58,9 +51,8 @@ void PolymarketDetailPanel::build_ui() {
     }
     thl->addStretch(1);
     vl->addWidget(tab_bar);
-    apply_accent_to_tabs();
 
-    // ── Stacked pages ─────────────────────────────────────────────────────
+    // Stacked pages
     stack_ = new QStackedWidget;
     stack_->addWidget(create_overview_page()); // 0
 
@@ -68,20 +60,16 @@ void PolymarketDetailPanel::build_ui() {
     stack_->addWidget(orderbook_); // 1
 
     price_chart_ = new PolymarketPriceChart;
-    connect(price_chart_, &PolymarketPriceChart::interval_changed,
-            this, &PolymarketDetailPanel::interval_changed);
-    connect(price_chart_, &PolymarketPriceChart::outcome_changed,
-            this, &PolymarketDetailPanel::outcome_changed);
+    connect(price_chart_, &PolymarketPriceChart::interval_changed, this, &PolymarketDetailPanel::interval_changed);
+    connect(price_chart_, &PolymarketPriceChart::outcome_changed, this, &PolymarketDetailPanel::outcome_changed);
     stack_->addWidget(price_chart_); // 2
 
-    stack_->addWidget(create_trade_page()); // 3
-
     activity_feed_ = new PolymarketActivityFeed;
-    stack_->addWidget(activity_feed_); // 4
+    stack_->addWidget(activity_feed_); // 3
 
-    stack_->addWidget(create_holders_page());  // 5
-    stack_->addWidget(create_comments_page()); // 6
-    stack_->addWidget(create_related_page());  // 7
+    stack_->addWidget(create_holders_page());  // 4
+    stack_->addWidget(create_comments_page()); // 5
+    stack_->addWidget(create_related_page());  // 6
 
     vl->addWidget(stack_, 1);
 }
@@ -89,63 +77,33 @@ void PolymarketDetailPanel::build_ui() {
 QWidget* PolymarketDetailPanel::create_overview_page() {
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
-    scroll->setStyleSheet(
-        QString("QScrollArea { border: none; background: %1; }"
-                "QScrollBar:vertical { background: %2; width: 4px; border: none; }"
-                "QScrollBar::handle:vertical { background: %3; min-height: 20px; }"
-                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }")
-            .arg(colors::BG_BASE(), colors::BG_SURFACE(), colors::BORDER_BRIGHT()));
-
-    auto* page = new QWidget;
-    page->setStyleSheet(QString("background: %1;").arg(colors::BG_BASE()));
+    scroll->setStyleSheet("QScrollArea { border: none; background: transparent; }");
+    auto* page = new QWidget(this);
     auto* vl = new QVBoxLayout(page);
-    vl->setContentsMargins(16, 14, 16, 16);
-    vl->setSpacing(0);
+    vl->setContentsMargins(16, 16, 16, 16);
+    vl->setSpacing(12);
 
-    // ── Market question / title ───────────────────────────────────────────
+    // 鈹€鈹€ Market question / title 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     question_label_ = new QLabel(tr("Select a market to view details"));
     question_label_->setStyleSheet(
-        QString("color: %1; font-size: 13px; font-weight: 700; background: transparent; "
-                "line-height: 1.4;")
-            .arg(colors::TEXT_PRIMARY()));
+        QString("color: %1; font-size: 14px; font-weight: 700; background: transparent;").arg(colors::TEXT_PRIMARY()));
     question_label_->setWordWrap(true);
-    question_label_->setMinimumHeight(36);
     vl->addWidget(question_label_);
 
-    vl->addSpacing(10);
+    // Stats grid
+    auto* stats = new QWidget(this);
+    auto* sgl = new QHBoxLayout(stats);
+    sgl->setContentsMargins(0, 0, 0, 0);
+    sgl->setSpacing(16);
 
-    // ── Status row (badge + outcome labels) ───────────────────────────────
-    auto* status_row = new QWidget;
-    status_row->setStyleSheet("background: transparent;");
-    auto* srl = new QHBoxLayout(status_row);
-    srl->setContentsMargins(0, 0, 0, 0);
-    srl->setSpacing(6);
+    auto lbl_style =
+        QString("color: %1; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; background: transparent;")
+            .arg(colors::TEXT_SECONDARY());
+    auto val_style =
+        QString("color: %1; font-size: 13px; font-weight: 700; background: transparent;").arg(colors::CYAN());
 
-    status_label_ = new QLabel;
-    srl->addWidget(status_label_);
-    srl->addStretch(1);
-    vl->addWidget(status_row);
-
-    vl->addSpacing(12);
-
-    // ── Stats: two rows of 3-4 cells each ────────────────────────────────
-    // Row 1 of stats
-    auto* stats_row1 = new QWidget;
-    stats_row1->setStyleSheet(
-        QString("background: %1; border: 1px solid %2; border-bottom: none;")
-            .arg(colors::BG_SURFACE(), colors::BORDER_DIM()));
-    auto* sr1l = new QHBoxLayout(stats_row1);
-    sr1l->setContentsMargins(0, 0, 0, 0);
-    sr1l->setSpacing(0);
-
-    auto make_stat_in = [&](QWidget* parent_row, QHBoxLayout* row_layout,
-                             const QString& lbl, QLabel*& val,
-                             bool last = false, QWidget** box_out = nullptr) {
-        auto* box = new QWidget(parent_row);
-        box->setStyleSheet(
-            last ? QString("background: transparent;")
-                 : QString("background: transparent; border-right: 1px solid %1;")
-                       .arg(colors::BORDER_DIM()));
+    auto make_stat = [&](const QString& label, QLabel*& val_lbl) {
+        auto* box = new QWidget(this);
         auto* bvl = new QVBoxLayout(box);
         bvl->setContentsMargins(12, 8, 12, 8);
         bvl->setSpacing(3);
@@ -158,7 +116,7 @@ QWidget* PolymarketDetailPanel::create_overview_page() {
         // Cache the caption label so retranslateUi can re-apply its text.
         stat_caption_lbls_.append(lbl_w);
 
-        val = new QLabel("—", box);
+        val = new QLabel("鈥?, box);
         val->setStyleSheet(
             QString("color: %1; font-size: 12px; font-weight: 700; background: transparent;")
                 .arg(colors::TEXT_PRIMARY()));
@@ -175,14 +133,10 @@ QWidget* PolymarketDetailPanel::create_overview_page() {
     make_stat_in(stats_row1, sr1l, tr("END DATE"),  end_date_label_, true);
     vl->addWidget(stats_row1);
 
-    // Row 2 of stats
-    auto* stats_row2 = new QWidget;
-    stats_row2->setStyleSheet(
-        QString("background: %1; border: 1px solid %2;")
-            .arg(colors::BG_SURFACE(), colors::BORDER_DIM()));
-    auto* sr2l = new QHBoxLayout(stats_row2);
-    sr2l->setContentsMargins(0, 0, 0, 0);
-    sr2l->setSpacing(0);
+    status_label_ = new QLabel;
+    sgl->addWidget(status_label_);
+    sgl->addStretch(1);
+    vl->addWidget(stats);
 
     make_stat_in(stats_row2, sr2l, tr("MIDPOINT"),   midpoint_label_);
     make_stat_in(stats_row2, sr2l, tr("SPREAD"),     spread_label_);
@@ -191,7 +145,7 @@ QWidget* PolymarketDetailPanel::create_overview_page() {
 
     vl->addSpacing(14);
 
-    // ── Outcome probability bars ──────────────────────────────────────────
+    // 鈹€鈹€ Outcome probability bars 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     outcomes_header_ = new QLabel(tr("OUTCOMES"));
     auto* outcomes_header = outcomes_header_;
     outcomes_header->setStyleSheet(
@@ -205,17 +159,13 @@ QWidget* PolymarketDetailPanel::create_overview_page() {
     outcome_container_->setStyleSheet("background: transparent;");
     auto* ocl = new QVBoxLayout(outcome_container_);
     ocl->setContentsMargins(0, 0, 0, 0);
-    ocl->setSpacing(6);
+    ocl->setSpacing(2);
     vl->addWidget(outcome_container_);
 
-    vl->addSpacing(14);
-
-    // ── Description ───────────────────────────────────────────────────────
+    // Description
     description_label_ = new QLabel;
     description_label_->setStyleSheet(
-        QString("color: %1; font-size: 10px; line-height: 1.5; background: transparent; "
-                "border-top: 1px solid %2; padding-top: 12px;")
-            .arg(colors::TEXT_SECONDARY(), colors::BORDER_DIM()));
+        QString("color: %1; font-size: 11px; background: transparent;").arg(colors::TEXT_SECONDARY()));
     description_label_->setWordWrap(true);
     vl->addWidget(description_label_);
 
@@ -228,13 +178,13 @@ QWidget* PolymarketDetailPanel::create_trade_page() {
     // Two-state stack: 0 = no-account placeholder, 1 = ticket form.
     ticket_stack_ = new QStackedWidget;
 
-    // ── State 0: no account connected ────────────────────────────────────────
+    // 鈹€鈹€ State 0: no account connected 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     auto* no_acct = new QWidget;
     no_acct->setStyleSheet(QString("background: %1;").arg(colors::BG_BASE()));
     auto* nal = new QVBoxLayout(no_acct);
     nal->setAlignment(Qt::AlignCenter);
     nal->setSpacing(8);
-    auto* icon_lbl = new QLabel("🔒");
+    auto* icon_lbl = new QLabel("馃敀");
     icon_lbl->setAlignment(Qt::AlignCenter);
     icon_lbl->setStyleSheet("font-size: 28px; background: transparent;");
     no_acct_msg_lbl_ = new QLabel(tr("Connect an account\nto place orders"));
@@ -246,7 +196,7 @@ QWidget* PolymarketDetailPanel::create_trade_page() {
     nal->addWidget(msg_lbl);
     ticket_stack_->addWidget(no_acct); // index 0
 
-    // ── State 1: ticket form ─────────────────────────────────────────────────
+    // 鈹€鈹€ State 1: ticket form 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     auto* form = new QWidget;
     form->setStyleSheet(QString("background: %1;").arg(colors::BG_BASE()));
     auto* fl = new QVBoxLayout(form);
@@ -269,7 +219,7 @@ QWidget* PolymarketDetailPanel::create_trade_page() {
     bal_lbl->setStyleSheet(
         QString("color: %1; font-size: 8px; font-weight: 700; letter-spacing: 0.8px; "
                 "background: transparent;").arg(colors::TEXT_SECONDARY()));
-    ticket_balance_lbl_ = new QLabel("—");
+    ticket_balance_lbl_ = new QLabel("鈥?);
     ticket_balance_lbl_->setStyleSheet(
         QString("color: %1; font-size: 12px; font-weight: 700; background: transparent;")
             .arg(colors::TEXT_PRIMARY()));
@@ -285,7 +235,7 @@ QWidget* PolymarketDetailPanel::create_trade_page() {
     pos_lbl->setStyleSheet(
         QString("color: %1; font-size: 8px; font-weight: 700; letter-spacing: 0.8px; "
                 "background: transparent;").arg(colors::TEXT_SECONDARY()));
-    ticket_position_lbl_ = new QLabel("—");
+    ticket_position_lbl_ = new QLabel("鈥?);
     ticket_position_lbl_->setAlignment(Qt::AlignRight);
     ticket_position_lbl_->setStyleSheet(
         QString("color: %1; font-size: 12px; font-weight: 700; background: transparent;")
@@ -359,7 +309,7 @@ QWidget* PolymarketDetailPanel::create_trade_page() {
 
     auto* price_col = new QVBoxLayout;
     price_col->setSpacing(4);
-    price_col->addWidget(make_label(tr("PRICE (0–1)")));
+    price_col->addWidget(make_label(tr("PRICE (0鈥?)")));
     ticket_price_edit_ = new QLineEdit;
     ticket_price_edit_->setPlaceholderText("0.50");
     ticket_price_edit_->setStyleSheet(input_ss);
@@ -380,7 +330,7 @@ QWidget* PolymarketDetailPanel::create_trade_page() {
     // Order type
     fl->addWidget(make_label(tr("ORDER TYPE")));
     ticket_type_cb_ = new QComboBox;
-    // GTC/FOK/FAK are protocol order-type codes sent in the order request —
+    // GTC/FOK/FAK are protocol order-type codes sent in the order request 鈥?
     // not translated.
     ticket_type_cb_->addItems({"GTC", "FOK", "FAK"});
     ticket_type_cb_->setStyleSheet(input_ss);
@@ -446,13 +396,13 @@ void PolymarketDetailPanel::on_submit_clicked() {
     if (!price_ok || price <= 0.0 || price >= 1.0) {
         ticket_status_lbl_->setStyleSheet(
             QString("color: %1; font-size: 10px; background: transparent;").arg(colors::NEGATIVE()));
-        ticket_status_lbl_->setText(tr("Invalid price — enter a value between 0 and 1"));
+        ticket_status_lbl_->setText(tr("Invalid price 鈥?enter a value between 0 and 1"));
         return;
     }
     if (!size_ok || size <= 0.0) {
         ticket_status_lbl_->setStyleSheet(
             QString("color: %1; font-size: 10px; background: transparent;").arg(colors::NEGATIVE()));
-        ticket_status_lbl_->setText(tr("Invalid size — must be > 0"));
+        ticket_status_lbl_->setText(tr("Invalid size 鈥?must be > 0"));
         return;
     }
 
@@ -471,7 +421,7 @@ void PolymarketDetailPanel::on_submit_clicked() {
 
     ticket_status_lbl_->setStyleSheet(
         QString("color: %1; font-size: 10px; background: transparent;").arg(colors::TEXT_DIM()));
-    ticket_status_lbl_->setText(tr("Submitting…"));
+    ticket_status_lbl_->setText(tr("Submitting鈥?));
     ticket_submit_btn_->setEnabled(false);
     emit place_order(req);
 }
@@ -502,7 +452,7 @@ void PolymarketDetailPanel::on_order_result(const OrderResult& result) {
         ticket_status_lbl_->setStyleSheet(
             QString("color: %1; font-size: 10px; background: transparent;").arg(colors::POSITIVE()));
         ticket_status_lbl_->setText(
-            tr("Order placed ✓  ID: %1").arg(result.order_id.left(12)));
+            tr("Order placed 鉁? ID: %1").arg(result.order_id.left(12)));
         ticket_price_edit_->clear();
         ticket_size_edit_->clear();
     } else {
@@ -526,35 +476,20 @@ QWidget* PolymarketDetailPanel::create_holders_page() {
     holders_table_->verticalHeader()->setVisible(false);
     holders_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     holders_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    holders_table_->setShowGrid(false);
     holders_table_->setStyleSheet(
-        QString("QTableWidget { background: %1; color: %2; border: none; font-size: 10px; }"
-                "QTableWidget::item { padding: 4px 8px; border-bottom: 1px solid %3; }"
-                "QTableWidget::item:selected { background: %4; color: %2; }"
-                "QHeaderView::section {"
-                "  background: %5; color: %6; border: none;"
-                "  border-bottom: 1px solid %3;"
-                "  padding: 5px 8px; font-size: 8px; font-weight: 700; letter-spacing: 0.5px;"
-                "}"
-                "QScrollBar:vertical { background: %1; width: 4px; border: none; }"
-                "QScrollBar::handle:vertical { background: %3; min-height: 20px; }"
-                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }")
-            .arg(colors::BG_BASE(), colors::TEXT_PRIMARY(), colors::BORDER_DIM(),
-                 colors::BG_HOVER(), colors::BG_RAISED(), colors::TEXT_SECONDARY()));
+        QString("QTableWidget { background: %1; color: %2; border: none; gridline-color: %3; font-size: 11px; }"
+                "QTableWidget::item { padding: 2px 6px; border-bottom: 1px solid %3; }"
+                "QHeaderView::section { background: %4; color: %5; border: none; "
+                "  border-bottom: 1px solid %3; padding: 4px 6px; font-size: 10px; font-weight: 700; }")
+            .arg(colors::BG_BASE(), colors::TEXT_PRIMARY(), colors::BORDER_DIM(), colors::BG_RAISED(), colors::TEXT_SECONDARY()));
     return holders_table_;
 }
 
 QWidget* PolymarketDetailPanel::create_comments_page() {
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
-    scroll->setStyleSheet(
-        QString("QScrollArea { border: none; background: %1; }"
-                "QScrollBar:vertical { background: %1; width: 4px; border: none; }"
-                "QScrollBar::handle:vertical { background: %2; min-height: 20px; }"
-                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }")
-            .arg(colors::BG_BASE(), colors::BORDER_BRIGHT()));
-    comments_container_ = new QWidget;
-    comments_container_->setStyleSheet(QString("background: %1;").arg(colors::BG_BASE()));
+    scroll->setStyleSheet("QScrollArea { border: none; background: transparent; }");
+    comments_container_ = new QWidget(this);
     auto* vl = new QVBoxLayout(comments_container_);
     vl->setContentsMargins(16, 16, 16, 16);
     vl->setSpacing(8);
@@ -571,14 +506,8 @@ QWidget* PolymarketDetailPanel::create_comments_page() {
 QWidget* PolymarketDetailPanel::create_related_page() {
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
-    scroll->setStyleSheet(
-        QString("QScrollArea { border: none; background: %1; }"
-                "QScrollBar:vertical { background: %1; width: 4px; border: none; }"
-                "QScrollBar::handle:vertical { background: %2; min-height: 20px; }"
-                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }")
-            .arg(colors::BG_BASE(), colors::BORDER_BRIGHT()));
-    related_container_ = new QWidget;
-    related_container_->setStyleSheet(QString("background: %1;").arg(colors::BG_BASE()));
+    scroll->setStyleSheet("QScrollArea { border: none; background: transparent; }");
+    related_container_ = new QWidget(this);
     auto* vl = new QVBoxLayout(related_container_);
     vl->setContentsMargins(16, 16, 16, 16);
     vl->setSpacing(6);
@@ -602,130 +531,86 @@ void PolymarketDetailPanel::set_active_tab(int tab) {
     emit tab_changed(tab);
 }
 
-// ── Data setters ────────────────────────────────────────────────────────────
+// 鈹€鈹€ Data setters 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
-void PolymarketDetailPanel::set_market(const PredictionMarket& market) {
-    last_market_ = market;
-    has_last_market_ = true;
-
+void PolymarketDetailPanel::set_market(const Market& market) {
     question_label_->setText(market.question);
-    volume_label_->setText(presentation_.format_volume(market.volume));
-    liquidity_label_->setText(presentation_.format_liquidity(market.liquidity));
-    end_date_label_->setText(market.end_date_iso.left(10));
-    midpoint_label_->setText("—");
-    spread_label_->setText("—");
-    last_trade_label_->setText("—");
-    oi_label_->setText("—");
+    volume_label_->setText(fmt_vol(market.volume));
+    liquidity_label_->setText(fmt_vol(market.liquidity));
+    end_date_label_->setText(market.end_date.left(10));
+    midpoint_label_->setText("--");
+    spread_label_->setText("--");
+    last_trade_label_->setText("--");
+    oi_label_->setText("--");
 
-    render_status_badge(market);
-
-    // ── Populate ticket outcome combo ─────────────────────────────────────
-    if (ticket_outcome_cb_) {
-        ticket_outcome_cb_->clear();
-        for (const auto& o : market.outcomes)
-            ticket_outcome_cb_->addItem(o.name);
+    // Status badge
+    if (market.closed) {
+        status_label_->setText("RESOLVED");
+        status_label_->setStyleSheet(QString("color: %1; background: rgba(22,163,74,0.15); "
+                                             "font-size: 9px; font-weight: 700; padding: 2px 6px;")
+                                         .arg(colors::POSITIVE()));
+    } else if (market.active) {
+        status_label_->setText("ACTIVE");
+        status_label_->setStyleSheet(QString("color: %1; background: rgba(217,119,6,0.15); "
+                                             "font-size: 9px; font-weight: 700; padding: 2px 6px;")
+                                         .arg(colors::AMBER()));
+    } else {
+        status_label_->setText("INACTIVE");
+        status_label_->setStyleSheet(QString("color: %1; background: transparent; "
+                                             "font-size: 9px; font-weight: 700; padding: 2px 6px;")
+                                         .arg(colors::TEXT_DIM()));
     }
-    if (ticket_status_lbl_) ticket_status_lbl_->clear();
-    if (ticket_submit_btn_) ticket_submit_btn_->setEnabled(true);
-    if (ticket_position_lbl_) ticket_position_lbl_->setText("—");
 
-    // ── Rebuild outcome probability bars ──────────────────────────────────
-    auto* layout = qobject_cast<QVBoxLayout*>(outcome_container_->layout());
+    // Outcomes
+    auto* layout = outcome_container_->layout();
     while (layout->count() > 0) {
         auto* item = layout->takeAt(0);
-        if (item->widget()) item->widget()->deleteLater();
+        if (item->widget())
+            item->widget()->deleteLater();
         delete item;
     }
 
     for (int i = 0; i < market.outcomes.size(); ++i) {
         const auto& outcome = market.outcomes[i];
-        const double pct = qBound(0.0, outcome.price, 1.0);
-        const int pct_int = qRound(pct * 100.0);
+        auto* row = new QWidget(this);
+        QString color = (i < OUTCOME_COLORS.size()) ? OUTCOME_COLORS[i] : colors::TEXT_SECONDARY;
+        row->setStyleSheet(QString("background: %1; border-left: 3px solid %2; padding: 4px 8px; margin: 2px 0;")
+                               .arg(colors::BG_RAISED(), color));
+        auto* rl = new QHBoxLayout(row);
+        rl->setContentsMargins(8, 4, 8, 4);
+        rl->setSpacing(8);
 
-        QColor bar_color;
-        if (i == 0) bar_color = presentation_.accent;
-        else if (i < 5) bar_color = QColor(OUTCOME_COLORS[i]);
-        else bar_color = QColor(colors::TEXT_SECONDARY());
-
-        // Outcome row: name + bar + price
-        auto* row = new QWidget(outcome_container_);
-        row->setStyleSheet("background: transparent;");
-        auto* rl = new QVBoxLayout(row);
-        rl->setContentsMargins(0, 0, 0, 0);
-        rl->setSpacing(3);
-
-        // Top line: name + percentage
-        auto* top_line = new QWidget(row);
-        top_line->setStyleSheet("background: transparent;");
-        auto* tll = new QHBoxLayout(top_line);
-        tll->setContentsMargins(0, 0, 0, 0);
-        tll->setSpacing(6);
-
-        auto* name_lbl = new QLabel(outcome.name, top_line);
-        name_lbl->setStyleSheet(
-            QString("color: %1; font-size: 10px; font-weight: 600; background: transparent;")
-                .arg(colors::TEXT_PRIMARY()));
-
-        auto* pct_lbl = new QLabel(QString("%1%").arg(pct_int), top_line);
-        pct_lbl->setStyleSheet(
-            QString("color: %1; font-size: 11px; font-weight: 700; background: transparent;")
-                .arg(bar_color.name()));
-
-        // Full formatted price (right side)
-        auto* price_lbl = new QLabel(presentation_.format_price(pct), top_line);
-        price_lbl->setStyleSheet(
-            QString("color: %1; font-size: 10px; font-weight: 600; background: transparent;")
-                .arg(colors::TEXT_SECONDARY()));
-
-        tll->addWidget(name_lbl);
-        tll->addStretch(1);
-        tll->addWidget(pct_lbl);
-        tll->addSpacing(8);
-        tll->addWidget(price_lbl);
-        rl->addWidget(top_line);
-
-        // Progress bar — a simple fixed-height widget
-        auto* bar_track = new QWidget(row);
-        bar_track->setFixedHeight(6);
-        bar_track->setStyleSheet(
-            QString("background: %1; border-radius: 0px;").arg(colors::BG_RAISED()));
-        // Fill widget sits inside the track with proportional width — use
-        // a layout that we stretch manually via resize.
-        auto* bar_fill = new QWidget(bar_track);
-        bar_fill->setStyleSheet(
-            QString("background: %1; border-radius: 0px;").arg(bar_color.name()));
-        // Store pct on the fill widget so it can be re-sized on layout.
-        bar_fill->setProperty("fill_pct", pct);
-
-        // We need the fill to track the track width — use a nested layout.
-        auto* bar_layout = new QHBoxLayout(bar_track);
-        bar_layout->setContentsMargins(0, 0, 0, 0);
-        bar_layout->setSpacing(0);
-        bar_layout->addWidget(bar_fill, qRound(pct * 1000));
-        if (pct < 1.0) bar_layout->addStretch(qRound((1.0 - pct) * 1000));
-
-        rl->addWidget(bar_track);
+        auto* name = new QLabel(outcome.name);
+        name->setStyleSheet(QString("color: %1; font-size: 11px; font-weight: 700; background: transparent;")
+                                .arg(colors::TEXT_PRIMARY()));
+        auto* price = new QLabel(fmt_price(outcome.price));
+        price->setStyleSheet(
+            QString("color: %1; font-size: 13px; font-weight: 700; background: transparent;").arg(color));
+        rl->addWidget(name);
+        rl->addStretch(1);
+        rl->addWidget(price);
         layout->addWidget(row);
     }
 
-    description_label_->setText(market.description.left(600));
+    // Description
+    description_label_->setText(market.description.left(500));
 
+    // Token labels for chart
     QStringList labels;
-    labels.reserve(market.outcomes.size());
     for (const auto& o : market.outcomes)
         labels.append(o.name);
-    price_chart_->set_outcome_labels(labels);
+    price_chart_->set_token_labels(labels);
 
     set_active_tab(0);
 }
 
-void PolymarketDetailPanel::set_price_summary(const pmx::PriceSummary& summary) {
-    midpoint_label_->setText(presentation_.format_price(summary.midpoint));
-    spread_label_->setText(presentation_.format_price(summary.spread));
-    last_trade_label_->setText(presentation_.format_price(summary.last_trade_price));
+void PolymarketDetailPanel::set_price_summary(const PriceSummary& summary) {
+    midpoint_label_->setText(fmt_price(summary.midpoint));
+    spread_label_->setText(fmt_price(summary.spread));
+    last_trade_label_->setText(fmt_price(summary.last_trade_price));
 }
 
-void PolymarketDetailPanel::set_order_book(const PredictionOrderBook& book) {
+void PolymarketDetailPanel::set_order_book(const OrderBook& book) {
     orderbook_->set_data(book);
 }
 
@@ -733,41 +618,36 @@ void PolymarketDetailPanel::set_price_history(const PriceHistory& history) {
     price_chart_->set_price_history(history);
 }
 
-void PolymarketDetailPanel::set_trades(const QVector<PredictionTrade>& trades) {
+void PolymarketDetailPanel::set_trades(const QVector<Trade>& trades) {
     activity_feed_->set_trades(trades);
 }
 
-void PolymarketDetailPanel::set_top_holders(const QVector<pmx::TopHolder>& holders) {
+void PolymarketDetailPanel::set_top_holders(const QVector<TopHolder>& holders) {
     holders_table_->setSortingEnabled(false);
     holders_table_->setRowCount(holders.size());
     for (int i = 0; i < holders.size(); ++i) {
-        const pmx::TopHolder& h = holders[i];
+        const auto& h = holders[i];
         auto* rank = new QTableWidgetItem(QString::number(h.rank > 0 ? h.rank : i + 1));
         rank->setTextAlignment(Qt::AlignCenter);
         holders_table_->setItem(i, 0, rank);
         holders_table_->setItem(i, 1, new QTableWidgetItem(h.display_name));
-        auto* size_item = new QTableWidgetItem(QString::number(h.position_size, 'f', 2));
-        size_item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        holders_table_->setItem(i, 2, size_item);
-        auto* price_item = new QTableWidgetItem(QString::number(h.entry_price, 'f', 4));
-        price_item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        holders_table_->setItem(i, 3, price_item);
-        if (i % 2 == 1) {
-            for (int c = 0; c < 4; ++c) {
-                if (auto* it = holders_table_->item(i, c))
-                    it->setBackground(QColor(colors::ROW_ALT()));
-            }
-        }
+        auto* size = new QTableWidgetItem(QString::number(h.position_size, 'f', 2));
+        size->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        holders_table_->setItem(i, 2, size);
+        auto* price = new QTableWidgetItem(QString::number(h.entry_price, 'f', 4));
+        price->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        holders_table_->setItem(i, 3, price);
     }
     holders_table_->resizeColumnsToContents();
     holders_table_->setSortingEnabled(true);
 }
 
-void PolymarketDetailPanel::set_comments(const QVector<pmx::Comment>& comments) {
-    auto* vl = qobject_cast<QVBoxLayout*>(comments_container_->layout());
-    while (vl->count() > 0) {
-        auto* item = vl->takeAt(0);
-        if (item->widget()) item->widget()->deleteLater();
+void PolymarketDetailPanel::set_comments(const QVector<Comment>& comments) {
+    auto* layout = comments_container_->layout();
+    while (layout->count() > 0) {
+        auto* item = layout->takeAt(0);
+        if (item->widget())
+            item->widget()->deleteLater();
         delete item;
     }
 
@@ -776,18 +656,18 @@ void PolymarketDetailPanel::set_comments(const QVector<pmx::Comment>& comments) 
         empty->setStyleSheet(
             QString("color: %1; font-size: 12px; background: transparent;").arg(colors::TEXT_DIM()));
         empty->setAlignment(Qt::AlignCenter);
-        vl->addWidget(empty);
+        layout->addWidget(empty);
     } else {
         for (const auto& c : comments) {
-            auto* card = new QWidget(comments_container_);
-            card->setStyleSheet(
-                QString("background: %1; border: 1px solid %2; border-left: 2px solid %3;")
-                    .arg(colors::BG_SURFACE(), colors::BORDER_DIM(), colors::AMBER()));
+            auto* card = new QWidget(this);
+            card->setStyleSheet(QString("background: %1; padding: 8px; margin: 2px 0; "
+                                        "border-left: 2px solid %2;")
+                                    .arg(colors::BG_RAISED(), colors::BORDER_MED()));
             auto* cvl = new QVBoxLayout(card);
-            cvl->setContentsMargins(10, 8, 10, 8);
-            cvl->setSpacing(4);
+            cvl->setContentsMargins(8, 4, 8, 4);
+            cvl->setSpacing(2);
 
-            auto* author = new QLabel(c.author.isEmpty() ? c.author_address.left(12) + "…" : c.author);
+            auto* author = new QLabel(c.author.isEmpty() ? c.author_address.left(10) + "..." : c.author);
             author->setStyleSheet(
                 QString("color: %1; font-size: 9px; font-weight: 700; background: transparent;")
                     .arg(colors::AMBER()));
@@ -800,24 +680,37 @@ void PolymarketDetailPanel::set_comments(const QVector<pmx::Comment>& comments) 
 
             auto* meta = new QLabel(
                 QDateTime::fromSecsSinceEpoch(c.created_at, QTimeZone::UTC).toString("yyyy-MM-dd HH:mm") +
-                (c.likes > 0 ? tr("  · %1 likes").arg(c.likes) : QString()));
+                (c.likes > 0 ? tr("  路 %1 likes").arg(c.likes) : QString()));
             meta->setStyleSheet(
                 QString("color: %1; font-size: 8px; background: transparent;").arg(colors::TEXT_DIM()));
 
             cvl->addWidget(author);
+
+            auto* body = new QLabel(c.body.left(300));
+            body->setStyleSheet(
+                QString("color: %1; font-size: 11px; background: transparent;").arg(colors::TEXT_PRIMARY()));
+            body->setWordWrap(true);
             cvl->addWidget(body);
+
+            auto* meta = new QLabel(QDateTime::fromSecsSinceEpoch(c.created_at, Qt::UTC).toString("yyyy-MM-dd HH:mm") +
+                                    (c.likes > 0 ? QString("  %1 likes").arg(c.likes) : ""));
+            meta->setStyleSheet(QString("color: %1; font-size: 9px; background: transparent;").arg(colors::TEXT_DIM()));
             cvl->addWidget(meta);
-            vl->addWidget(card);
+
+            layout->addWidget(card);
         }
     }
-    vl->addStretch(1);
+
+    // Add stretch at end
+    static_cast<QVBoxLayout*>(layout)->addStretch(1);
 }
 
-void PolymarketDetailPanel::set_related_markets(const QVector<PredictionMarket>& markets) {
-    auto* vl = qobject_cast<QVBoxLayout*>(related_container_->layout());
-    while (vl->count() > 0) {
-        auto* item = vl->takeAt(0);
-        if (item->widget()) item->widget()->deleteLater();
+void PolymarketDetailPanel::set_related_markets(const QVector<Market>& markets) {
+    auto* layout = related_container_->layout();
+    while (layout->count() > 0) {
+        auto* item = layout->takeAt(0);
+        if (item->widget())
+            item->widget()->deleteLater();
         delete item;
     }
 
@@ -826,86 +719,40 @@ void PolymarketDetailPanel::set_related_markets(const QVector<PredictionMarket>&
         empty->setStyleSheet(
             QString("color: %1; font-size: 12px; background: transparent;").arg(colors::TEXT_DIM()));
         empty->setAlignment(Qt::AlignCenter);
-        vl->addWidget(empty);
+        layout->addWidget(empty);
     } else {
         for (const auto& m : markets) {
-            auto* card = new QPushButton(related_container_);
-            card->setStyleSheet(
-                QString("QPushButton {"
-                        "  background: %1;"
-                        "  color: %2;"
-                        "  border: 1px solid %3;"
-                        "  text-align: left;"
-                        "  padding: 8px 12px;"
-                        "  font-size: 10px;"
-                        "  font-weight: 600;"
-                        "}"
-                        "QPushButton:hover { background: %4; color: %5; border-color: %6; }")
-                    .arg(colors::BG_SURFACE(), colors::TEXT_SECONDARY(), colors::BORDER_DIM(),
-                         colors::BG_HOVER(), colors::TEXT_PRIMARY(), colors::BORDER_BRIGHT()));
-            card->setText(m.question.left(70) + (m.question.size() > 70 ? "…" : ""));
+            auto* card = new QPushButton;
+            card->setText(m.question.left(60) + "\n" + fmt_vol(m.volume));
+            card->setStyleSheet(QString("QPushButton { background: %1; color: %2; border: 1px solid %3; "
+                                        "  text-align: left; padding: 8px; font-size: 11px; }"
+                                        "QPushButton:hover { background: %4; color: %5; }")
+                                    .arg(colors::BG_RAISED(), colors::TEXT_SECONDARY(), colors::BORDER_DIM(),
+                                         colors::BG_HOVER(), colors::TEXT_PRIMARY()));
             card->setCursor(Qt::PointingHandCursor);
             connect(card, &QPushButton::clicked, this, [this, m]() { emit related_market_clicked(m); });
-            vl->addWidget(card);
+            layout->addWidget(card);
         }
     }
-    vl->addStretch(1);
+
+    static_cast<QVBoxLayout*>(layout)->addStretch(1);
 }
 
 void PolymarketDetailPanel::set_open_interest(double oi) {
-    oi_label_->setText(presentation_.format_volume(oi));
-}
-
-void PolymarketDetailPanel::set_series_tooltip(const QString& tooltip) {
-    if (question_label_) question_label_->setToolTip(tooltip);
-}
-
-void PolymarketDetailPanel::set_polymarket_extras_enabled(bool enabled) {
-    const int extra_tabs[] = {kTabHolders, kTabComments, kTabRelated};
-    for (int idx : extra_tabs) {
-        if (idx >= 0 && idx < tab_btns_.size())
-            tab_btns_[idx]->setVisible(enabled);
-    }
-    if (!enabled) {
-        if (holders_table_) holders_table_->setRowCount(0);
-
-        auto clear_container = [](QWidget* container, const QString& msg) {
-            if (!container) return;
-            auto* vl = qobject_cast<QVBoxLayout*>(container->layout());
-            if (!vl) return;
-            while (vl->count() > 0) {
-                auto* item = vl->takeAt(0);
-                if (item->widget()) item->widget()->deleteLater();
-                delete item;
-            }
-            auto* empty = new QLabel(msg);
-            empty->setStyleSheet(
-                QString("color: %1; font-size: 12px; background: transparent;")
-                    .arg(colors::TEXT_DIM()));
-            empty->setAlignment(Qt::AlignCenter);
-            vl->addWidget(empty);
-            vl->addStretch(1);
-        };
-        clear_container(comments_container_, tr("Comments are Polymarket-only"));
-        clear_container(related_container_, tr("Related markets are Polymarket-only"));
-
-        const int current = stack_ ? stack_->currentIndex() : 0;
-        if (current == kTabHolders || current == kTabComments || current == kTabRelated)
-            set_active_tab(0);
-    }
+    oi_label_->setText(fmt_vol(oi));
 }
 
 void PolymarketDetailPanel::clear() {
     has_last_market_ = false;
     last_market_ = {};
     question_label_->setText(tr("Select a market to view details"));
-    volume_label_->setText("—");
-    liquidity_label_->setText("—");
-    end_date_label_->setText("—");
-    midpoint_label_->setText("—");
-    spread_label_->setText("—");
-    last_trade_label_->setText("—");
-    oi_label_->setText("—");
+    volume_label_->setText("鈥?);
+    liquidity_label_->setText("鈥?);
+    end_date_label_->setText("鈥?);
+    midpoint_label_->setText("鈥?);
+    spread_label_->setText("鈥?);
+    last_trade_label_->setText("鈥?);
+    oi_label_->setText("鈥?);
     status_label_->clear();
     description_label_->clear();
     orderbook_->clear();
@@ -921,7 +768,7 @@ void PolymarketDetailPanel::clear() {
     }
 }
 
-// ── Presentation wiring ─────────────────────────────────────────────────────
+// 鈹€鈹€ Presentation wiring 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PolymarketDetailPanel::set_presentation(const ExchangePresentation& p) {
     const bool accent_changed = p.accent != presentation_.accent;
@@ -1012,7 +859,7 @@ void PolymarketDetailPanel::retranslateUi() {
     if (no_acct_msg_lbl_) no_acct_msg_lbl_->setText(tr("Connect an account\nto place orders"));
     if (bal_caption_lbl_) bal_caption_lbl_->setText(tr("AVAILABLE"));
     if (pos_caption_lbl_) pos_caption_lbl_->setText(tr("POSITION"));
-    const QStringList form_caps = {tr("OUTCOME"), tr("PRICE (0–1)"), tr("SIZE"), tr("ORDER TYPE")};
+    const QStringList form_caps = {tr("OUTCOME"), tr("PRICE (0鈥?)"), tr("SIZE"), tr("ORDER TYPE")};
     for (int i = 0; i < trade_form_caption_lbls_.size() && i < form_caps.size(); ++i)
         if (trade_form_caption_lbls_[i]) trade_form_caption_lbls_[i]->setText(form_caps[i]);
     if (ticket_buy_btn_)    ticket_buy_btn_->setText(tr("BUY"));

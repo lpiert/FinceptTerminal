@@ -217,7 +217,10 @@ void BacktestingScreen::build_ui() {
     setStyleSheet(QString("background:%1;").arg(ui::colors::BG_BASE()));
 }
 
-// ── IStatefulScreen ───────────────────────────────────────────────────────────
+    void changeEvent(QEvent* event) override;
+    /// Wipe registration + OTP fields whenever the screen leaves the stack so
+    /// entered credentials do not linger.
+    void hideEvent(QHideEvent* event) override;// ── IStatefulScreen ───────────────────────────────────────────────────────────
 
 QVariantMap BacktestingScreen::save_state() const {
     QVariantMap state{

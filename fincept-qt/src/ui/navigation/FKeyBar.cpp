@@ -25,8 +25,7 @@ TabBar::TabBar(QWidget* parent) : QWidget(parent) {
         {"node_editor", "NODES"},   {"code_editor", "CODE"},  {"ai_quant_lab", "QUANT LAB"}, {"quantlib", "QUANTLIB"},
         {"settings", "SETTINGS"},   {"profile", "PROFILE"},
     };
-    for (const auto& def : tab_defs_)
-        add_tab(def);
+    for (const auto& def : tab_defs_)        add_tab(def);
     scroll_area->setWidget(container);
     auto* root = new QHBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);

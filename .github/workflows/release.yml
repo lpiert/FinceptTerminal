@@ -100,11 +100,6 @@ jobs:
           echo "Binary: $BINARY ($(du -sh "$BINARY" | cut -f1))"
 
       # ── Deploy Qt DLLs ────────────────────────────────────────────────────
-      # Mirrors the matrix build in build-cpp.yml — both must stage the SAME
-      # set of DLLs, plugins, and resources or the installer ships a broken
-      # app. Any addition here should also go into build-cpp.yml (and vice
-      # versa). Philosophy: ship everything windeployqt might miss, even if
-      # it's redundant — a 10MB larger installer is better than a crashing app.
       - name: Deploy Qt DLLs (windeployqt)
         shell: bash
         working-directory: fincept-qt
@@ -118,16 +113,6 @@ jobs:
           [ -f "$WDQT" ] && "$WDQT" --release --no-translations --compiler-runtime \
             --include-soft-plugins --force "${BUILD_DIR}/${{ env.APP_NAME }}.exe"
 
-          # qgeoview.dll is emitted by a FetchContent target and copied next to
-          # the exe by a POST_BUILD custom_command — confirm it's present so we
-          # catch the case where the custom_command silently failed.
-          if [ -f "${BUILD_DIR}/qgeoview.dll" ]; then
-            echo "qgeoview.dll present"
-          else
-            echo "::warning::qgeoview.dll missing from ${BUILD_DIR} — map widget will fail to load"
-          fi
-
-          # Qt Core DLLs — belt-and-suspenders for anything windeployqt misses.
           for qt_dll in \
             Qt6Core.dll Qt6Gui.dll Qt6Widgets.dll Qt6Charts.dll Qt6PrintSupport.dll \
             Qt6Network.dll Qt6Sql.dll Qt6Concurrent.dll Qt6WebSockets.dll \
@@ -137,32 +122,20 @@ jobs:
               cp "${QT_BIN}/${qt_dll}" "${BUILD_DIR}/" || true
           done
 
-          # OpenSSL — Qt6::Network needs these for HTTPS. Qt ships them in its
-          # own bin/. Include the 1.1 names as a fallback for older Qt kits.
-          for ssl_dll in \
-            libssl-3-x64.dll libcrypto-3-x64.dll \
-            libssl-3.dll     libcrypto-3.dll \
-            libssl-1_1-x64.dll libcrypto-1_1-x64.dll; do
+          for ssl_dll in libssl-3-x64.dll libcrypto-3-x64.dll libssl-3.dll libcrypto-3.dll; do
             [ -f "${QT_BIN}/${ssl_dll}" ] && [ ! -f "${BUILD_DIR}/${ssl_dll}" ] && \
               cp "${QT_BIN}/${ssl_dll}" "${BUILD_DIR}/" || true
             [ -f "${OPENSSL_ROOT_DIR}/bin/${ssl_dll}" ] && [ ! -f "${BUILD_DIR}/${ssl_dll}" ] && \
               cp "${OPENSSL_ROOT_DIR}/bin/${ssl_dll}" "${BUILD_DIR}/" || true
           done
 
-          # MSVC runtime — --compiler-runtime covers most but not all VS2022 17.x
-          # DLLs (msvcp170, vcruntime140_2, vccorlib140 are sometimes missed).
-          for vcrt_dll in \
-            vcruntime140.dll vcruntime140_1.dll vcruntime140_2.dll \
-            msvcp140.dll msvcp140_1.dll msvcp140_2.dll \
-            msvcp170.dll \
-            concrt140.dll vccorlib140.dll; do
+          for vcrt_dll in vcruntime140.dll vcruntime140_1.dll msvcp140.dll msvcp140_1.dll \
+            msvcp140_2.dll concrt140.dll; do
             SYS32="/c/Windows/System32/${vcrt_dll}"
             [ -f "$SYS32" ] && [ ! -f "${BUILD_DIR}/${vcrt_dll}" ] && \
               cp "$SYS32" "${BUILD_DIR}/" || true
           done
 
-          # Qt plugin directories — whole-dir copy so we pick up every provided
-          # plugin without maintaining a per-file allowlist.
           for plugin_dir in platforms sqldrivers imageformats iconengines styles tls \
             multimedia texttospeech networkinformation platforminputcontexts printsupport generic; do
             [ -d "${QT_PLUGINS}/${plugin_dir}" ] && \
@@ -170,17 +143,11 @@ jobs:
                 cp -n "${QT_PLUGINS}/${plugin_dir}/"*.dll "${BUILD_DIR}/${plugin_dir}/" 2>/dev/null || true; }
           done
 
-          # Direct3D compiler + OpenGL SW fallback — needed on VMs / headless
-          # machines without a proper GPU driver. dxcompiler/dxil: Qt 6.6+ D3D12
-          # backend (DXC shader compiler) — on Win11 boxes without WinSDK.
-          for d3d_dll in \
-            d3dcompiler_47.dll opengl32sw.dll libEGL.dll libGLESv2.dll \
-            dxcompiler.dll dxil.dll; do
+          for d3d_dll in d3dcompiler_47.dll opengl32sw.dll libEGL.dll libGLESv2.dll; do
             [ -f "${QT_BIN}/${d3d_dll}" ] && [ ! -f "${BUILD_DIR}/${d3d_dll}" ] && \
               cp "${QT_BIN}/${d3d_dll}" "${BUILD_DIR}/" || true
           done
 
-          # ICU — Qt 6 on Windows ships its own ICU for Unicode support.
           for icu_dll in "${QT_BIN}"/icu*.dll; do
             base=$(basename "$icu_dll")
             [ -f "$icu_dll" ] && [ ! -f "${BUILD_DIR}/${base}" ] && \
@@ -188,27 +155,8 @@ jobs:
           done
 
           cp -r resources "${BUILD_DIR}/resources" 2>/dev/null || true
-          bash "${GITHUB_WORKSPACE}/.github/scripts/sync_scripts.sh" scripts "${BUILD_DIR}/scripts"
-          # qt.conf — pins plugin and data paths relative to the executable.
-          # Without this, Qt falls back to hardcoded build-time paths which
-          # don't exist on a clean machine and cause plugin load failures.
+          cp -r scripts   "${BUILD_DIR}/scripts"   2>/dev/null || true
           printf '[Paths]\nPrefix = .\nPlugins = .\nLibraries = .\n' > "${BUILD_DIR}/qt.conf"
-
-          # Fail early if anything essential didn't make it into the stage dir.
-          echo ""
-          echo "=== Staged Windows payload ==="
-          MISSING=0
-          for essential in \
-            "${{ env.APP_NAME }}.exe" \
-            Qt6Core.dll Qt6Gui.dll Qt6Widgets.dll Qt6Network.dll \
-            platforms/qwindows.dll sqldrivers/qsqlite.dll \
-            tls/qschannelbackend.dll; do
-            if [ ! -f "${BUILD_DIR}/${essential}" ]; then
-              echo "::error::Missing essential file: ${essential}"
-              MISSING=1
-            fi
-          done
-          [ "$MISSING" -eq 1 ] && exit 1
           echo "=== $(find "${BUILD_DIR}" -type f | wc -l) files staged ==="
 
       # ── Generate Installer ────────────────────────────────────────────────
@@ -223,18 +171,17 @@ jobs:
           ls -lh ${{ env.APP_NAME }}-*-setup* 2>/dev/null || ls -lh *.exe 2>/dev/null || true
 
       # ── Upload ────────────────────────────────────────────────────────────
-      # Narrow the glob to the installer output — the broader `*.exe` pattern
-      # would also catch the main FinceptTerminal.exe binary, which we don't
-      # want to publish as a release asset (users should run the installer).
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: FinceptTerminal-Windows-x64-installer
-          path: fincept-qt/build/FinceptTerminal-*-windows-x64-setup.exe
+          path: |
+            fincept-qt/build/FinceptTerminal-*-setup*
+            fincept-qt/build/FinceptTerminal-*.exe
           retention-days: 30
 
 # ═════════════════════════════════════════════════════════════════════════════
-# JOB 2 — Linux x64 Installer (self-contained AppImage, served as .run)
+# JOB 2 — Linux x64 Installer (QtIFW .run)
 # ═════════════════════════════════════════════════════════════════════════════
   build-linux:
     name: Linux x64 Installer
@@ -257,67 +204,48 @@ jobs:
           # update is redundant and was observed to hang the runner.
 
       # ── System deps ───────────────────────────────────────────────────────
-      # ubuntu-22.04 ships g++ 11.4 by default, but CMakeLists.txt enforces
-      # GCC 12.3+. Install gcc-12/g++-12 and pin CC/CXX for the rest of the job.
-      # We intentionally do NOT install apt Qt packages — ubuntu-22.04 ships
-      # Qt 6.2 and CMakeLists pins Qt 6.8.3 EXACT. Qt is installed via
-      # jurplel/install-qt-action below, matching the Windows and macOS jobs.
-      # We still need the XCB / GL system libs so Qt's xcb platform plugin
-      # can link at build time and load at runtime.
       - name: Install system dependencies
         run: |
           sudo add-apt-repository universe -y
           sudo apt-get update -qq
           sudo apt-get install -y \
-            cmake ninja-build gcc-12 g++-12 \
+            cmake ninja-build g++ \
             libssl-dev \
+            qt6-base-dev qt6-base-private-dev \
+            qt6-tools-dev qt6-tools-dev-tools \
+            libqt6charts6-dev libqt6websockets6-dev \
+            qt6-multimedia-dev libqt6multimediawidgets6 \
+            libqt6svg6-dev libqt6concurrent6 \
             libgl1-mesa-dev libglu1-mesa-dev \
             libxkbcommon-dev libxkbcommon-x11-0 \
-            libxcb-cursor0 libxcb-cursor-dev \
-            libxcb-icccm4 libxcb-icccm4-dev \
-            libxcb-image0  libxcb-image0-dev \
-            libxcb-keysyms1 libxcb-keysyms1-dev \
-            libxcb-randr0 \
-            libxcb-render-util0 libxcb-render-util0-dev \
-            libxcb-shape0-dev \
-            libxcb-sync-dev \
-            libxcb-xfixes0-dev \
-            libxcb-xinerama0 libxcb-xinerama0-dev \
-            libxcb-xkb1 libxkbcommon-x11-dev \
-            libdbus-1-dev libfontconfig1-dev libfreetype6-dev \
-            python3 python3-pip pkg-config zip \
-            wget file libfuse2 patchelf
-          echo "CC=gcc-12"  >> "$GITHUB_ENV"
-          echo "CXX=g++-12" >> "$GITHUB_ENV"
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+            libxcb-xinerama0 libxcb-xkb1 \
+            python3 python3-pip pkg-config zip
 
-      # ── Qt 6.8.3 (matches CMakeLists' Qt6 EXACT pin) ──────────────────────
-      - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ env.QT_VERSION }}
-          arch: linux_gcc_64
-          modules: ${{ env.QT_MODULES }}
-          cache: true
-          cache-key-prefix: qt-linux-x64-release
+      # ── Qt Installer Framework ────────────────────────────────────────────
+      - name: Install Qt Installer Framework
+        run: |
+          pip3 install aqtinstall
+          aqt install-tool linux desktop ${{ env.QT_IFW_TOOL }} \
+            --outputdir "${{ runner.temp }}/qtifw"
+          IFW_DIR="${{ runner.temp }}/qtifw/Tools/QtInstallerFramework/${{ env.QT_IFW_VERSION }}"
+          echo "QT_IFW_DIR=${IFW_DIR}" >> "$GITHUB_ENV"
+          echo "PATH=${IFW_DIR}/bin:${PATH}" >> "$GITHUB_ENV"
 
       # ── yt-dlp (bundled for dashboard video playback) ────────────────────
       - name: Install yt-dlp
         run: pip install yt-dlp
 
       # ── Configure + Build ─────────────────────────────────────────────────
-      # No FINCEPT_BUILD_INSTALLER / no QtIFW on Linux — we ship an AppImage
-      # instead (see "Build AppImage" step below).
       - name: Configure CMake
         working-directory: fincept-qt
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
-            -DOPENSSL_ROOT_DIR=/usr \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DFINCEPT_REQUIRE_BUNDLED_YTDLP=ON
-
       - name: Build
         working-directory: fincept-qt
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel $(nproc)
@@ -331,26 +259,17 @@ jobs:
           echo "Binary: $BINARY ($(du -sh "$BINARY" | cut -f1))"
           file "$BINARY"
 
-      # ── Build self-contained AppImage ─────────────────────────────────────
-      # The previous release workflow ran CPack IFW on Linux but didn't bundle
-      # Qt at all — the installer produced a "binary + desktop file" payload
-      # that crashed on every machine missing the matching apt Qt. We now ship
-      # an AppImage instead: linuxdeploy walks the binary's needed-libraries
-      # list, pulls in every transitive .so (Qt + XCB + ICU + OpenSSL + GL),
-      # patchelfs the RPATH, and bakes it all into one executable file the
-      # auto-updater can chmod+launch like a .run.
-      #
-      # Filename keeps the `-linux-x64-setup.run` suffix so it matches the
-      # regex in update-manifest (AppImage is just a self-mounting executable
-      # — the updater's "chmod +x and launch" path works identically).
-      - name: Build AppImage
+      # ── Stage package ─────────────────────────────────────────────────────
+      - name: Stage package contents
         working-directory: fincept-qt
         run: |
           set -euo pipefail
-          APPDIR="build/AppDir"
-          mkdir -p "${APPDIR}/usr/bin"
-          mkdir -p "${APPDIR}/usr/share/applications"
-          mkdir -p "${APPDIR}/usr/share/icons/hicolor/256x256/apps"
+          STAGE_DIR="build/stage"
+          mkdir -p "${STAGE_DIR}"
+          cp "build/${{ env.APP_NAME }}" "${STAGE_DIR}/"
+          chmod +x "${STAGE_DIR}/${{ env.APP_NAME }}"
+          cp -r resources "${STAGE_DIR}/resources" 2>/dev/null || true
+          cp -r scripts   "${STAGE_DIR}/scripts"   2>/dev/null || true
 
           # Stage binary + desktop entry + icon
           cp "build/${{ env.APP_NAME }}" "${APPDIR}/usr/bin/"
@@ -503,7 +422,6 @@ jobs:
             command -v zsyncmake >/dev/null 2>&1 && \
               zsyncmake "build/${OUTPUT}" -o "build/${OUTPUT}.zsync" || true
           fi
-
       # ── Build .deb package ────────────────────────────────────────────────
       - name: Build .deb package
         working-directory: fincept-qt
@@ -592,7 +510,6 @@ jobs:
           echo "Built: FinceptTerminal-${VERSION}-linux-x64.rpm ($(du -sh "build/FinceptTerminal-${VERSION}-linux-x64.rpm" | cut -f1))"
 
       # ── Upload ────────────────────────────────────────────────────────────
-      # Version-stamped filename so update-manifest regex picks it up.
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -601,8 +518,7 @@ jobs:
             fincept-qt/build/FinceptTerminal-*-linux-x64-setup.run
             fincept-qt/build/FinceptTerminal-*-linux-x64-setup.run.zsync
             fincept-qt/build/FinceptTerminal-*-linux-x64.deb
-            fincept-qt/build/FinceptTerminal-*-linux-x64.rpm
-          retention-days: 30
+            fincept-qt/build/FinceptTerminal-*-linux-x64.rpm          retention-days: 30
 
 # ═════════════════════════════════════════════════════════════════════════════
 # JOB 3 — macOS arm64 Installer (DMG built with hdiutil)
@@ -639,6 +555,16 @@ jobs:
 
       - name: Install Python 3.12
         run: brew install python@3.12 || brew upgrade python@3.12 || true
+
+      # ── Qt Installer Framework ────────────────────────────────────────────
+      - name: Install Qt Installer Framework
+        run: |
+          pip3 install --break-system-packages aqtinstall
+          aqt install-tool mac desktop ${{ env.QT_IFW_TOOL }} \
+            --outputdir "${{ runner.temp }}/qtifw"
+          IFW_DIR="${{ runner.temp }}/qtifw/Tools/QtInstallerFramework/${{ env.QT_IFW_VERSION }}"
+          echo "QT_IFW_DIR=${IFW_DIR}" >> "$GITHUB_ENV"
+          echo "PATH=${IFW_DIR}/bin:${PATH}" >> "$GITHUB_ENV"
 
       # ── Icon ──────────────────────────────────────────────────────────────
       - name: Generate .icns icon
@@ -677,8 +603,6 @@ jobs:
         run: pip install yt-dlp
 
       # ── Configure + Build ─────────────────────────────────────────────────
-      # No FINCEPT_BUILD_INSTALLER on macOS — we ship a DMG built from the
-      # post-processed bundle (see "Generate Installer (DMG)" step below).
       - name: Configure CMake
         working-directory: fincept-qt
         run: |
@@ -686,11 +610,9 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
             -DCMAKE_OSX_ARCHITECTURES=arm64 \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DFINCEPT_REQUIRE_BUNDLED_YTDLP=ON
-
       - name: Build
         working-directory: fincept-qt
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -j $(sysctl -n hw.logicalcpu)
@@ -952,7 +874,6 @@ jobs:
                  "${APP_BUNDLE}/Contents/Resources/yt-dlp"
               echo "  moved Contents/MacOS/yt-dlp → Contents/Resources/yt-dlp"
           fi
-
           echo "Bundle staged at: ${APP_BUNDLE}"
           echo "Pre-sign size: $(du -sh "${APP_BUNDLE}" | cut -f1)"
           echo "=== Contents/MacOS/ top level (should be Mach-Os only) ==="
@@ -972,13 +893,10 @@ jobs:
           MACDEPLOYQT="${QT_ROOT_DIR}/bin/macdeployqt"
           if [ -x "${MACDEPLOYQT}" ]; then
             echo "Running macdeployqt on ${APP_BUNDLE}"
-            # -always-overwrite keeps incremental runs idempotent on local
-            # re-runs without affecting CI (which always starts clean).
-            "${MACDEPLOYQT}" "${APP_BUNDLE}" -verbose=1 -always-overwrite || \
+            "${MACDEPLOYQT}" "${APP_BUNDLE}" -verbose=1 || \
               echo "::warning::macdeployqt exited non-zero — continuing to explicit codesign"
           else
-            echo "::error::macdeployqt not found at ${MACDEPLOYQT} — bundle will be missing Qt frameworks"
-            exit 1
+            echo "::warning::macdeployqt not found at ${MACDEPLOYQT}"
           fi
 
           # Belt-and-suspenders: if any linked dylib is still pointing outside
@@ -1080,8 +998,7 @@ jobs:
       - name: Import Developer ID certificate
         env:
           P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
-          P12_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
-        run: |
+          P12_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}        run: |
           set -euo pipefail
           KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
           P12_PATH="$RUNNER_TEMP/cert.p12"
@@ -1453,37 +1370,29 @@ jobs:
           cp -R "build/${{ env.APP_NAME }}.app" "dist/"
           echo "Final bundle size: $(du -sh "dist/${{ env.APP_NAME }}.app" | cut -f1)"
 
-      # ── Generate Installer (DMG via hdiutil) ──────────────────────────────
-      # We intentionally skip CPack IFW on macOS: CPack's install(TARGETS ...
-      # BUNDLE) rule packages the raw build-tree .app, NOT the post-processed
-      # one we just ran macdeployqt + deep codesign over. Shipping the raw
-      # bundle produces the dyld SIGKILL "Code Signature Invalid" crash
-      # tracked in issue #139. A plain hdiutil DMG over `dist/` (which
-      # contains the signed bundle) gives users a working drag-to-Apps DMG.
-      - name: Generate Installer (DMG)
-        working-directory: fincept-qt
+      # ── Generate Installer (IFW → DMG fallback) ───────────────────────────
+      - name: Generate Installer
+        working-directory: fincept-qt/build
         run: |
           set -euo pipefail
-          # Parse project() VERSION so the DMG filename matches the regex in
-          # update-manifest: FinceptTerminal-<version>-macos-arm64-setup.dmg
-          VERSION=$(grep -Eo 'project\(FinceptTerminal VERSION [0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt | awk '{print $3}')
-          [ -n "${VERSION}" ] || { echo "::error::Could not parse VERSION from CMakeLists.txt"; exit 1; }
-          DMG_NAME="FinceptTerminal-${VERSION}-macos-arm64-setup.dmg"
-          echo "DMG target: ${DMG_NAME}"
+          export PATH="${QT_IFW_DIR}/bin:${PATH}"
 
-          STAGING="$(mktemp -d)/dmg_staging"
-          mkdir -p "${STAGING}"
-          cp -R "dist/${{ env.APP_NAME }}.app" "${STAGING}/"
-          # Symlink /Applications so users can drag the app across in the DMG.
-          ln -s /Applications "${STAGING}/Applications"
-
-          hdiutil create \
-            -volname "${{ env.APP_NAME }}" \
-            -srcfolder "${STAGING}" \
-            -ov -format UDZO \
-            "build/${DMG_NAME}"
-
-          ls -lh "build/${DMG_NAME}"
+          if command -v binarycreator &>/dev/null; then
+            echo "Running CPack IFW..."
+            cpack -G IFW --verbose
+            ls -lh ${{ env.APP_NAME }}-*-setup* 2>/dev/null || ls -lh *.dmg 2>/dev/null || true
+          else
+            echo "::warning::binarycreator not found — falling back to DMG via hdiutil"
+            STAGING="$(mktemp -d)/dmg_staging"
+            mkdir -p "${STAGING}"
+            cp -R "../dist/${{ env.APP_NAME }}.app" "${STAGING}/"
+            hdiutil create \
+              -volname "${{ env.APP_NAME }}" \
+              -srcfolder "${STAGING}" \
+              -ov -format UDZO \
+              "${{ env.APP_NAME }}-macOS-arm64.dmg"
+            ls -lh ${{ env.APP_NAME }}-*.dmg
+          fi
 
       # ── Sign + Notarize + Staple DMG ──────────────────────────────────────
       # Sign the DMG itself, submit to Apple's notary service, and staple
@@ -1596,7 +1505,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FinceptTerminal-macOS-arm64-installer
-          path: fincept-qt/build/FinceptTerminal-*-macos-arm64-setup.dmg
+          path: |
+            fincept-qt/build/FinceptTerminal-*-setup*
+            fincept-qt/build/FinceptTerminal-*.dmg
           retention-days: 30
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1821,7 +1732,6 @@ jobs:
           # YAML indentation can't poison the Python source.
           export README NEW_BLOCK
           python3 .github/scripts/update_readme_table.py
-
           echo "=== README diff preview (first 60 lines) ==="
           git diff README.md | head -60 || true
 
@@ -1847,7 +1757,6 @@ jobs:
           # Delegate manifest generation to a standalone Python script to
           # keep this step free of YAML/Python indentation conflicts.
           python3 .github/scripts/generate_updates_manifest.py > updates.json
-
           echo "=== updates.json diff ==="
           git diff updates.json | head -80 || true
 

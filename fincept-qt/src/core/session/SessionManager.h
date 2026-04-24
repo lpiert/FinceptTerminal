@@ -1,9 +1,7 @@
-﻿#pragma once
+#pragma once
 #include <QElapsedTimer>
-#include <QList>
 #include <QObject>
 #include <QSettings>
-#include <QString>
 #include <QVariantMap>
 
 namespace fincept {
@@ -43,7 +41,6 @@ class SessionManager : public QObject {
     // state toggles. Namespaced under window_<id>/flags/<name>.
     void save_window_flag(int window_id, const QString& name, bool value);
     bool load_window_flag(int window_id, const QString& name, bool default_value = false) const;
-
     // ADS dock layout — scoped per window_id
     void save_dock_layout(int window_id, const QByteArray& layout);
     QByteArray load_dock_layout(int window_id) const;

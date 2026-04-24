@@ -19,14 +19,6 @@ namespace fincept::python {
 struct SetupProgress;
 }
 
-namespace fincept::net {
-class NetSpeedMeter;
-}
-
-namespace fincept::ui {
-class SpeedSparkline;
-}
-
 namespace fincept::screens {
 
 class SetupScreen : public QWidget {
@@ -44,8 +36,7 @@ class SetupScreen : public QWidget {
     void on_skip_clicked();
     void on_setup_timeout();
     void on_net_speed(qint64 down_bps, qint64 up_bps);
-    void on_elapsed_tick();
-
+    void on_elapsed_tick();
   protected:
     void changeEvent(QEvent* event) override;
 
@@ -107,8 +98,7 @@ class SetupScreen : public QWidget {
     /// Per-step status state. "Waiting" is the default; transitions to
     /// "Working...", an integer percentage string, "DONE", or "FAILED".
     enum class StepStatus { Waiting, Working, Done, Failed, Percent };
-
-    struct StepUI {
+    struct StepUI {
         QLabel* label = nullptr;
         QLabel* sublabel = nullptr;
         QProgressBar* bar = nullptr;

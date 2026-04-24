@@ -57,7 +57,9 @@ PortItem* NodeItem::find_port(const QString& port_id) const {
 }
 
 void NodeItem::rebuild_layout() {
-    // Ports are owned by scene via parent — just clear the lists
+    // Clear existing ports
+    for (auto* p : input_ports_) { /* owned by scene via parent */
+    }
     input_ports_.clear();
     output_ports_.clear();
 
@@ -211,7 +213,15 @@ QVariant NodeItem::itemChange(GraphicsItemChange change, const QVariant& value) 
         def_.y = pos.y();
         emit node_moved(def_.id, pos.x(), pos.y());
 
-        // Edges adjust in NodeScene via signal — no per-edge action needed here
+        // Update connected edges
+        for (auto* p : input_ports_)
+            for (auto* e : p->edges())
+                if (auto* edge = dynamic_cast<class EdgeItem*>(static_cast<QGraphicsItem*>(e)))
+                    ; // edges adjust in NodeScene via signal
+        for (auto* p : output_ports_)
+            for (auto* e : p->edges())
+                if (auto* edge = dynamic_cast<class EdgeItem*>(static_cast<QGraphicsItem*>(e)))
+                    ;
     }
 
     if (change == ItemSelectedHasChanged) {

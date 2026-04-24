@@ -6,6 +6,7 @@
 
 #include <QCoreApplication>
 #include <QCryptographicHash>
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -15,10 +16,10 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QSysInfo>
+#include <QTextStream>
 #include <QThread>
 #include <QtConcurrent>
 
-#include <algorithm>
 #include <atomic>
 
 namespace fincept::python {
@@ -43,7 +44,20 @@ QString PythonSetupManager::uv_path() const {
 }
 
 QString PythonSetupManager::base_python_path() const {
-    if (!cached_python_path_.isEmpty())
+    // Parent the QWebSocket to `this` so moveToThread on WebSocketClient
+    // also relocates the socket (and the QSocketNotifier / QTimer children
+    // that QWebSocket creates internally). Otherwise the socket stays on
+    // the construction thread while the wrapper has worker-thread affinity,
+    // and every connect/close/send call is a cross-thread access — Qt logs
+    // "QSocketNotifier: Socket notifiers cannot be enabled or disabled from
+    // another thread" and the SSL context eventually use-after-frees on
+    // teardown.
+    socket_ = new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
+    connect(socket_, &QWebSocket::connected, this, &WebSocketClient::on_connected);
+    connect(socket_, &QWebSocket::disconnected, this, &WebSocketClient::on_disconnected);
+    connect(socket_, &QWebSocket::textMessageReceived, this, &WebSocketClient::on_text_received);
+    connect(socket_, &QWebSocket::binaryMessageReceived, this, &WebSocketClient::on_binary_received);
+    connect(socket_, &QWebSocket::errorOccurred, this, &WebSocketClient::on_error);    if (!cached_python_path_.isEmpty())
         return cached_python_path_;
 
     // BLOCKING: spawns `uv python find` and waits up to 10s. Acceptable from
@@ -107,8 +121,7 @@ QStringList PythonSetupManager::uv_env_extra() const {
 }
 
 /// .packages_installed stores the SHA-256 hex of the last successfully-installed requirements file.
-/// Legacy "ok\n" markers fall through to the slow `uv pip list` verify and are then rewritten as hashes.
-static QString sentinel_path_for(const QString& install_dir) {
+/// Legacy "ok\n" markers fall through to the slow `uv pip list` verify and are then rewritten as hashes.static QString sentinel_path_for(const QString& install_dir) {
     return install_dir + "/.setup_complete";
 }
 
@@ -390,7 +403,7 @@ void PythonSetupManager::run_setup() {
     LOG_INFO("PythonSetup", "=== run_setup START ===");
     QPointer<PythonSetupManager> self = this;
 
-    (void)QtConcurrent::run([self]() {
+    QtConcurrent::run([self]() {
         if (!self)
             return;
 
@@ -648,8 +661,10 @@ bool PythonSetupManager::download_uv() {
 bool PythonSetupManager::install_python_via_uv() {
     emit_progress("python", 20, "UV is downloading Python 3.11...");
 
-    // Shared UV env (cache dir, hardlinks, bytecode compile, concurrency, timeout).
-    QStringList env = uv_env_extra();
+    // Tell UV where to install Python
+    QStringList env = {
+        "UV_PYTHON_INSTALL_DIR=" + install_dir() + "/python",
+    };
 
     if (!run_command(uv_path(), {"python", "install", kPythonVersion}, env)) {
         LOG_ERROR("PythonSetup", "uv python install failed");
@@ -684,7 +699,9 @@ bool PythonSetupManager::create_venv(const QString& venv_name) {
         QDir(venv_path).removeRecursively();
     }
 
-    QStringList env = uv_env_extra();
+    QStringList env = {
+        "UV_PYTHON_INSTALL_DIR=" + install_dir() + "/python",
+    };
 
     if (run_command(uv_path(), {"venv", venv_path, "--python", kPythonVersion}, env)) {
         LOG_INFO("PythonSetup", "Created venv: " + venv_name);
@@ -727,7 +744,6 @@ bool PythonSetupManager::install_packages(const QString& venv_name, const QStrin
     QStringList env = uv_env_extra();
     env << "PEEWEE_NO_SQLITE_EXTENSIONS=1"
         << "PEEWEE_NO_C_EXTENSION=1";
-
     // ── Pass 1: try installing everything at once (fast path) ────────────────
     // This succeeds on most machines and is 10-100x faster than one-by-one.
     LOG_INFO("PythonSetup", QString("[%1] Pass 1: bulk install from %2").arg(venv_name, requirements_file));
@@ -746,12 +762,35 @@ bool PythonSetupManager::install_packages(const QString& venv_name, const QStrin
         return true;
     }
 
+    // ── Pass 1.5: Retry bulk install with extended timeout ──────────────────
+    // If bulk failed due to transient network issues, retry once with longer timeout
+    LOG_WARN("PythonSetup",
+             QString("[%1] Bulk install failed, retrying with extended timeout...\n"
+                     "  stderr (first 400 chars): %2")
+                 .arg(venv_name, bulk_stderr.left(400)));
+    
+    emit_progress(step_key, 8, "Retrying bulk install (extended timeout)...");
+    
+    QStringList retry_env = env;
+    retry_env << "UV_HTTP_TIMEOUT=900";  // 15 minutes timeout for retry
+    
+    QString retry_stderr;
+    bool retry_ok = run_command_capture(uv_path(), 
+        {"pip", "install", "--python", venv_python, "--retries", "5", "-r", req_path}, 
+        retry_env, retry_stderr);
+    
+    if (retry_ok) {
+        LOG_INFO("PythonSetup", QString("[%1] Bulk install succeeded on retry").arg(venv_name));
+        write_marker_hash(venv_name, compute_requirements_hash(requirements_file));
+        emit_progress(step_key, 100, "All packages installed (after retry)");
+        return true;
+    }
+
     // ── Pass 2: bulk failed — install packages one-by-one, skip failures ────
     LOG_WARN("PythonSetup",
-             QString("[%1] Bulk install failed — falling back to per-package install.\n"
-                     "  UV command: %2 pip install --python %3 -r %4\n"
-                     "  stderr (first 600 chars): %5")
-                 .arg(venv_name, uv_path(), venv_python, req_path, bulk_stderr.left(600)));
+             QString("[%1] Bulk install failed again — falling back to per-package install.\n"
+                     "  stderr (first 600 chars): %2")
+                 .arg(venv_name, retry_stderr.left(600)));
     emit_progress(step_key, 10, "Bulk install failed — retrying package by package...");
 
     QStringList packages = read_packages_from_file(req_path);
@@ -767,8 +806,7 @@ bool PythonSetupManager::install_packages(const QString& venv_name, const QStrin
         // Write the requirements hash as the marker — all packages installed.
         write_marker_hash(venv_name, compute_requirements_hash(requirements_file));
         emit_progress(step_key, 100, "All packages installed");
-        return true;
-    }
+        return true;    }
 
     LOG_WARN("PythonSetup", QString("[%1] %2 package(s) failed: %3")
                                 .arg(venv_name)

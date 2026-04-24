@@ -1,5 +1,6 @@
 #pragma once
 #include "core/result/Result.h"
+#include "python/PythonRunner.h"
 
 #    include "datahub/Producer.h"
 
@@ -151,9 +152,39 @@ class MarketDataService : public QObject
     static QStringList mover_symbols();
     static QStringList global_snapshot_symbols();
 
+    /// China market default symbol lists
+    static QStringList china_a_share_symbols();
+    static QStringList china_futures_symbols();
+    static QStringList china_etf_symbols();
+    static QStringList china_hk_stock_symbols();
+
   private:
+    // ── Batching ──
+    struct PendingRequest {
+        QStringList symbols;
+        QuoteCallback cb;
+    };
+
     MarketDataService();
     void flush_batch();
+
+    /// Process global market quotes (yfinance)
+    void process_global_quotes(python::PythonResult result,
+                               QVector<PendingRequest> requests,
+                               const QStringList& china_symbols);
+
+    /// Process China market quotes (AkShare)
+    void process_china_quotes(QVector<QuoteData> existing_quotes,
+                              QVector<PendingRequest> requests,
+                              const QStringList& china_symbols);
+
+    /// Fan out results to all waiting callbacks
+    void fan_out_results(python::PythonResult result,
+                        const QVector<PendingRequest>& requests,
+                        const QVector<QuoteData>& all_quotes);
+
+    /// Legacy simple batch flush (backward compatibility)
+    void flush_batch_simple();
 
     /// Internal: publish the per-symbol result to the hub and clear
     /// in_flight for the matching topic. Called from inside `flush_batch`.
@@ -175,8 +206,7 @@ class MarketDataService : public QObject
     struct PendingRequest {
         QStringList symbols;
         QuoteCallback cb;
-    };
-    QVector<PendingRequest> pending_;
+    };    QVector<PendingRequest> pending_;
     bool batch_scheduled_ = false;
 
     bool hub_registered_ = false;

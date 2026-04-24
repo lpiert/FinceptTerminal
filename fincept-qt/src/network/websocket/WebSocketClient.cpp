@@ -68,8 +68,7 @@ WebSocketClient::WebSocketClient(QObject* parent) : QObject(parent) {
     connect(socket_, &QWebSocket::disconnected, this, &WebSocketClient::on_disconnected);
     connect(socket_, &QWebSocket::textMessageReceived, this, &WebSocketClient::on_text_received);
     connect(socket_, &QWebSocket::binaryMessageReceived, this, &WebSocketClient::on_binary_received);
-    connect(socket_, &QWebSocket::errorOccurred, this, &WebSocketClient::on_error);
-    connect(&reconnect_timer_, &QTimer::timeout, this, &WebSocketClient::attempt_reconnect);
+    connect(socket_, &QWebSocket::errorOccurred, this, &WebSocketClient::on_error);    connect(&reconnect_timer_, &QTimer::timeout, this, &WebSocketClient::attempt_reconnect);
     reconnect_timer_.setSingleShot(true);
 }
 

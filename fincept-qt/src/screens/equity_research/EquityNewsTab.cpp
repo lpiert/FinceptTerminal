@@ -71,8 +71,7 @@ void EquityNewsTab::build_ui() {
                                         "border-radius:3px; padding:4px 12px; font-size:10px; font-weight:700; }"
                                         "QPushButton:hover { border-color:%3; color:%3; }")
                                     .arg(ui::colors::TEXT_SECONDARY(), ui::colors::BORDER_DIM(), ui::colors::AMBER()));
-    connect(refresh_btn_, &QPushButton::clicked, this, [this]() {
-        if (!current_symbol_.isEmpty()) {
+    connect(refresh_btn_, &QPushButton::clicked, this, [this]() {        if (!current_symbol_.isEmpty()) {
             clear_cards();
             status_label_->show();
             loading_overlay_->show_loading(tr("LOADING NEWS…"));

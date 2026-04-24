@@ -508,7 +508,32 @@ void AltInvestmentsScreen::retranslateUi() {
 
 // ── UI Setup ─────────────────────────────────────────────────────────────────
 
+    force_tick_btn_ = new QPushButton(tr("FORCE TICK"));
+    connect(force_tick_btn_, &QPushButton::clicked, this, &AlphaArenaScreen::on_force_tick_clicked);
+    hl->addWidget(force_tick_btn_);
 
+    live_mode_btn_ = new QPushButton(tr("LIVE MODE…"));
+    connect(live_mode_btn_, &QPushButton::clicked, this, &AlphaArenaScreen::on_live_mode_toggle_clicked);
+    hl->addWidget(live_mode_btn_);
+
+    kill_all_btn_ = new QPushButton(tr("KILL ALL"));
+    kill_all_btn_->setStyleSheet("background:#C72020;color:#fff;font-weight:700;");
+    connect(kill_all_btn_, &QPushButton::clicked, this, &AlphaArenaScreen::on_kill_all_clicked);
+    hl->addWidget(kill_all_btn_);
+
+    cadence_label_ = new QLabel(tr("CADENCE"));
+    cadence_label_->setStyleSheet("color:#888;");
+    hl->addWidget(cadence_label_);
+    hot_cadence_spin_ = new QSpinBox;
+    hot_cadence_spin_->setRange(10, 3600);
+    hot_cadence_spin_->setValue(180);
+    hot_cadence_spin_->setSuffix(QStringLiteral("s"));
+    hl->addWidget(hot_cadence_spin_);
+    apply_cadence_btn_ = new QPushButton(tr("APPLY"));
+    connect(apply_cadence_btn_, &QPushButton::clicked, this, [this]() {
+        auto r = AlphaArenaEngine::instance().set_cadence(hot_cadence_spin_->value());
+        if (r.is_err()) {
+            QMessageBox::warning(this, tr("Alpha Arena"), QString::fromStdString(r.error()));
 QString AltInvestmentsScreen::format_value(const QJsonValue& v) const {
     if (v.isBool())
         return v.toBool() ? tr("Yes") : tr("No");

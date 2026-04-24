@@ -17,7 +17,6 @@
 [![GitHub Issues](https://img.shields.io/github/issues/Fincept-Corporation/FinceptTerminal)](https://github.com/Fincept-Corporation/FinceptTerminal/issues)
 
 [![X](https://img.shields.io/badge/-X-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/finceptcorp) [![Twitter](https://img.shields.io/badge/-Twitter-1DA1F2?style=flat-square&logo=twitter&logoColor=white)](https://twitter.com/intent/tweet?text=Check%20out%20FinceptTerminal&url=https%3A//github.com/Fincept-Corporation/FinceptTerminal/) [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A//github.com/Fincept-Corporation/FinceptTerminal/) [![Facebook](https://img.shields.io/badge/-Facebook-1877F2?style=flat-square&logo=facebook&logoColor=white)](https://www.facebook.com/sharer/sharer.php?u=https%3A//github.com/Fincept-Corporation/FinceptTerminal/) [![Reddit](https://img.shields.io/badge/-Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/r/finceptTerminal/) [![WhatsApp](https://img.shields.io/badge/-WhatsApp-25D366?style=flat-square&logo=whatsapp&logoColor=white)](https://api.whatsapp.com/send?text=Check%20out%20FinceptTerminal%3A%20https%3A//github.com/Fincept-Corporation/FinceptTerminal/) [![Telegram](https://img.shields.io/badge/-Telegram-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/finceptTerminalcorp)
-
 ### **Your Thinking is the Only Limit. The Data Isn't.**
 
 State-of-the-art financial intelligence platform with institutional-grade financial analytics, AI automation, and unlimited data connectivity.
@@ -87,9 +86,14 @@ cd FinceptTerminal
 chmod +x setup.sh && ./setup.sh
 ```
 
-The script handles: compiler check, CMake, Qt6, Python, build, and launch.
+```bat
+# Windows — run from Developer Command Prompt for VS 2022
+git clone https://github.com/Fincept-Corporation/FinceptTerminal.git
+cd FinceptTerminal
+setup.bat
+```
 
-> **Windows:** No setup script — use the manual build steps in Option 4 below. It's just two commands.
+The script handles: compiler check, CMake, Qt6, Python, build, and launch.
 
 ---
 
@@ -138,6 +142,11 @@ docker run --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix fincept-ter
 ```bash
 git clone https://github.com/Fincept-Corporation/FinceptTerminal.git
 cd FinceptTerminal/fincept-qt
+
+# Configure + build (pick your platform)
+cmake --preset win-release     && cmake --build --preset win-release      # Windows (Dev Cmd for VS 2022)
+cmake --preset linux-release   && cmake --build --preset linux-release    # Linux
+cmake --preset macos-release   && cmake --build --preset macos-release    # macOS
 ```
 
 **Step 1 — Configure** (one-time, or after `CMakeLists.txt` changes):
@@ -160,27 +169,24 @@ Debug variants: replace `release` with `debug` (e.g. `win-debug`, `linux-debug`,
 
 > **Windows prerequisite:** The PowerShell profile at `~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1`
 > auto-initializes VS 2022 on every new terminal — open a fresh PowerShell and cmake works directly.
-
 #### Build (manual — if presets can't resolve your Qt path)
 
-```powershell
-# Windows (PowerShell)
-cmake -B build/win-release -G Ninja -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_PREFIX_PATH="C:/Qt/6.8.3/msvc2022_64"
-cmake --build build/win-release
-```
-
 ```bash
+# Windows (Developer Command Prompt for VS 2022)
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release ^
+  -DCMAKE_PREFIX_PATH="C:/Qt/6.8.3/msvc2022_64"
+cmake --build build
+
 # Linux
-cmake -B build/linux-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_PREFIX_PATH="$HOME/Qt/6.8.3/gcc_64"
-cmake --build build/linux-release
+cmake --build build
 
 # macOS
-cmake -B build/macos-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -DCMAKE_PREFIX_PATH="$HOME/Qt/6.8.3/macos"
-cmake --build build/macos-release
+cmake --build build
 ```
 
 #### Run
@@ -290,8 +296,6 @@ The license attaches to the **codebase and any Derivative Work of it**, not to s
  </picture>
 </a>
 </div>
-
-[![Repobeats](https://repobeats.axiom.co/api/embed/fincept-corporation-finceptterminal.svg "Repobeats analytics image")](https://repobeats.axiom.co)
 
 [![Email](https://img.shields.io/badge/Email-support@fincept.in-blue)](mailto:support@fincept.in)
 

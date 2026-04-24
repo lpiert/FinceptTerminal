@@ -111,7 +111,7 @@ void TickerBar::load_symbols() {
     symbols_ = defaults;
 
     QPointer<TickerBar> self = this;
-    (void)QtConcurrent::run([self, defaults]() {
+    QtConcurrent::run([self, defaults]() {
         auto result = fincept::SettingsRepository::instance().get(kSettingsKey);
         QStringList loaded;
         if (result.is_ok() && !result.value().isEmpty()) {
@@ -131,7 +131,7 @@ void TickerBar::load_symbols() {
 
 void TickerBar::save_symbols() {
     const QString value = symbols_.join(",");
-    (void)QtConcurrent::run([value]() {
+    QtConcurrent::run([value]() {
         fincept::SettingsRepository::instance().set(kSettingsKey, value, kSettingsCategory);
     });
 }

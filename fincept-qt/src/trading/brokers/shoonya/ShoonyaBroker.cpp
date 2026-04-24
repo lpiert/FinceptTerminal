@@ -129,27 +129,26 @@ TokenExchangeResponse ShoonyaBroker::exchange_token(const QString& api_key, cons
                               {{"Content-Type", "application/x-www-form-urlencoded"}});
 
     if (!resp.success)
-        return {false, "", "", "", "Login failed: " + resp.error, ""};
+        return {false, "", "", "", "Login failed: " + resp.error};
 
     QJsonDocument doc = QJsonDocument::fromJson(resp.raw_body.toUtf8());
     if (!doc.isObject())
-        return {false, "", "", "", "Login: invalid response", ""};
+        return {false, "", "", "", "Login: invalid response"};
 
     QJsonObject obj = doc.object();
     if (obj.value("stat").toString() != "Ok")
-        return {false, "", "", "", obj.value("emsg").toString("Login failed"), ""};
+        return {false, "", "", "", obj.value("emsg").toString("Login failed")};
 
     QString token = obj.value("susertoken").toString();
     QString uid = obj.value("uid").toString(api_key);
 
     if (token.isEmpty())
-        return {false, "", "", "", "Login: no susertoken in response", ""};
+        return {false, "", "", "", "Login: no susertoken in response"};
 
     // Shoonya session tokens lapse at the daily reset; factor2 (TOTP/OTP) is a
     // one-time code we can't replay, so detect-only. Startup hint.
     const QString extra = with_token_expiry({}, next_ist_flush_epoch(6, 0));
-    return {true, token, "", uid, extra, ""};
-}
+    return {true, token, "", uid, extra, ""};}
 
 // ---------- place_order ----------
 

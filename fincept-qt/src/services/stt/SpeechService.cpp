@@ -1,25 +1,18 @@
-// SpeechService.cpp — Pluggable speech-to-text (Google or Deepgram).
+// SpeechService.cpp — Python-based speech-to-text via Google Speech Recognition.
 //
-// Architecture:
-//   SpeechService (public facade)
-//     └── SttProvider (abstract)
-//           ├── PythonSttProvider (shared QProcess + JSON-lines plumbing)
-//           │     ├── GoogleSttProvider   → scripts/voice/speech_to_text.py
-//           │     └── DeepgramSttProvider → scripts/voice/deepgram_stt.py
+// Process lifecycle:
+//   start_listening() → spawn QProcess running speech_to_text.py
+//   stdout JSON lines → parse_line() → emit transcription_ready / error_occurred
+//   stop_listening()  → kill QProcess
 //
-// Both providers share the same JSON-lines stdout protocol:
-//   {"status": "calibrating"|"listening"|"stopped"}
-//   {"text": "..."}        → transcription
-//   {"error": "..."}       → recoverable error
-//   {"fatal": "..."}       → unrecoverable error (process exits)
+// The Python script handles mic capture, ambient noise calibration, and
+// Google API calls. This service just manages the process and parses output.
 
 #include "services/stt/SpeechService.h"
 
-#include "core/config/AppConfig.h"
 #include "core/logging/Logger.h"
 #include "python/PythonRunner.h"
 #include "python/PythonSetupManager.h"
-#include "storage/secure/SecureStorage.h"
 
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -363,8 +356,7 @@ class DeepgramSttProvider final : public PythonSttProvider {
 };
 
 } // namespace
-
-// ── Singleton ────────────────────────────────────────────────────────────────
+// ── Singleton ────────────────────────────────────────────────────────────────
 
 SpeechService& SpeechService::instance() {
     static SpeechService s_instance;
@@ -376,7 +368,7 @@ SpeechService::SpeechService(QObject* parent) : QObject(parent) {
 }
 
 SpeechService::~SpeechService() {
-    teardown_provider();
+    kill_process();
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
@@ -390,8 +382,7 @@ QString SpeechService::configured_provider() {
         v = cfg.get("voice/provider", "google").toString().toLower();
     return (v == "deepgram") ? QStringLiteral("deepgram") : QStringLiteral("google");
 }
-
-void SpeechService::start_listening() {
+void SpeechService::start_listening() {
     LOG_INFO(TAG, QString("SpeechService::start_listening() — listening_=%1 provider=%2")
                       .arg(listening_.load(std::memory_order_relaxed))
                       .arg(provider_ ? provider_->name() : QStringLiteral("<none>")));
@@ -408,8 +399,7 @@ void SpeechService::start_listening() {
     }
 
     LOG_INFO(TAG, QString("start_listening: delegating to provider '%1'").arg(provider_->name()));
-    provider_->start();
-}
+    provider_->start();}
 
 void SpeechService::stop_listening() {
     LOG_INFO(TAG, QString("SpeechService::stop_listening() — listening_=%1 provider=%2")
@@ -439,14 +429,13 @@ void SpeechService::reload_config() {
         provider_->start();
     } else {
         LOG_INFO(TAG, "Voice config reloaded (idle)");
-    }
-}
+    }}
 
 bool SpeechService::is_listening() const noexcept {
     return listening_.load(std::memory_order_relaxed);
 }
 
-// ── Provider lifecycle ───────────────────────────────────────────────────────
+// ── Process management ───────────────────────────────────────────────────────
 
 void SpeechService::install_provider() {
     const QString id = configured_provider();
@@ -455,16 +444,31 @@ void SpeechService::install_provider() {
 
     // If an existing provider matches the selection, reuse it.
     if (provider_ && provider_->name() == id) {
-        LOG_INFO(TAG, "install_provider: reusing existing provider instance");
+        LOG_INFO(TAG, "install_provider: reusing existing provider instance");        return;
+    }
+
+    // Resolve the Python executable from the numpy2 venv
+    QString python_exe = python::PythonSetupManager::instance().python_path("venv-numpy2");
+    if (python_exe.isEmpty() || !QFileInfo::exists(python_exe)) {
+        // Fallback to PythonRunner's resolved path
+        python_exe = python::PythonRunner::instance().python_path();
+    }
+    if (python_exe.isEmpty()) {
+        const QString msg = QStringLiteral("Python not available — cannot start voice input");
+        LOG_ERROR(TAG, msg);
+        emit error_occurred(msg);
         return;
     }
 
-    teardown_provider();
-
-    if (id == QStringLiteral("deepgram"))
-        provider_ = std::make_unique<DeepgramSttProvider>(this);
-    else
-        provider_ = std::make_unique<GoogleSttProvider>(this);
+    // Resolve script path
+    const QString scripts_dir = python::PythonRunner::instance().scripts_dir();
+    const QString script_path = scripts_dir + QStringLiteral("/voice/speech_to_text.py");
+    if (!QFileInfo::exists(script_path)) {
+        const QString msg = QStringLiteral("Voice script not found: ") + script_path;
+        LOG_ERROR(TAG, msg);
+        emit error_occurred(msg);
+        return;
+    }
 
     connect(provider_.get(), &SttProvider::transcription, this, &SpeechService::transcription_ready);
     connect(provider_.get(), &SttProvider::error, this, &SpeechService::error_occurred);
@@ -476,15 +480,101 @@ void SpeechService::install_provider() {
         emit listening_changed(active);
     });
 
-    LOG_INFO(TAG, QString("Voice provider installed: %1").arg(id));
+    LOG_INFO(TAG, QString("Voice provider installed: %1").arg(id));}
+
+void SpeechService::kill_process() {
+    if (!process_)
+        return;
+
+    // Disconnect signals before killing to avoid spurious callbacks
+    disconnect(process_, nullptr, this, nullptr);
+
+    if (process_->state() != QProcess::NotRunning) {
+        process_->kill();
+        process_->waitForFinished(kShutdownTimeoutMs);
+    }
+    process_->deleteLater();
+    process_ = nullptr;
+    stdout_buffer_.clear();
+
+    const bool was_listening = listening_.exchange(false, std::memory_order_acq_rel);
+    if (was_listening) {
+        LOG_INFO(TAG, "Voice recognition process stopped");
+        emit listening_changed(false);
+    }
 }
 
-void SpeechService::teardown_provider() {
-    if (!provider_)
+// ── stdout parsing ───────────────────────────────────────────────────────────
+
+void SpeechService::on_stdout_ready() {
+    if (!process_)
         return;
-    provider_->stop();
-    disconnect(provider_.get(), nullptr, this, nullptr);
-    provider_.reset();
+
+    stdout_buffer_.append(process_->readAllStandardOutput());
+
+    // Process complete lines (JSON-lines protocol)
+    while (true) {
+        const int newline_pos = stdout_buffer_.indexOf('\n');
+        if (newline_pos < 0)
+            break;
+
+        const QByteArray line = stdout_buffer_.left(newline_pos).trimmed();
+        stdout_buffer_.remove(0, newline_pos + 1);
+
+        if (!line.isEmpty())
+            parse_line(line);
+    }
+}
+
+void SpeechService::parse_line(const QByteArray& line) {
+    QJsonParseError parse_err;
+    const QJsonDocument doc = QJsonDocument::fromJson(line, &parse_err);
+    if (parse_err.error != QJsonParseError::NoError) {
+        LOG_WARN(TAG, QString("Non-JSON stdout line: %1").arg(QString::fromUtf8(line)));
+        return;
+    }
+
+    const QJsonObject obj = doc.object();
+
+    if (obj.contains("text")) {
+        const QString text = obj["text"].toString().trimmed();
+        if (!text.isEmpty()) {
+            LOG_DEBUG(TAG, QString("Transcript: \"%1\"").arg(text));
+            emit transcription_ready(text);
+        }
+    } else if (obj.contains("error")) {
+        const QString msg = obj["error"].toString();
+        LOG_WARN(TAG, QString("STT error: %1").arg(msg));
+        emit error_occurred(msg);
+    } else if (obj.contains("fatal")) {
+        const QString msg = obj["fatal"].toString();
+        LOG_ERROR(TAG, QString("STT fatal: %1").arg(msg));
+        emit error_occurred(msg);
+        kill_process();
+    } else if (obj.contains("status")) {
+        const QString status = obj["status"].toString();
+        LOG_DEBUG(TAG, QString("STT status: %1").arg(status));
+    }
+}
+
+void SpeechService::on_process_finished(int exit_code, QProcess::ExitStatus status) {
+    LOG_INFO(TAG, QString("Voice process exited (code=%1, status=%2)")
+                      .arg(exit_code)
+                      .arg(status == QProcess::CrashExit ? "crash" : "normal"));
+
+    if (process_) {
+        process_->deleteLater();
+        process_ = nullptr;
+    }
+    stdout_buffer_.clear();
+
+    const bool was_listening = listening_.exchange(false, std::memory_order_acq_rel);
+    if (was_listening) {
+        emit listening_changed(false);
+        if (status == QProcess::CrashExit || exit_code != 0) {
+            emit error_occurred(QStringLiteral("Voice recognition stopped unexpectedly"));
+        }
+    }
 }
 
 } // namespace fincept::services

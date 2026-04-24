@@ -3,8 +3,8 @@
 // Core lifecycle: ctor, show/hide/resize events, refresh_theme, find_holding,
 // save_state/restore_state, current_symbol, on_group_symbol_changed.
 // Other concerns:
-//   - PortfolioScreen_Layout.cpp   — build_ui + build_* + update_main_view_data
-//   - PortfolioScreen_Handlers.cpp — service-event slots + user-action slots
+//   - PortfolioScreen_Layout.cpp   鈥?build_ui + build_* + update_main_view_data
+//   - PortfolioScreen_Handlers.cpp 鈥?service-event slots + user-action slots
 #include "screens/portfolio/PortfolioScreen.h"
 
 #include "core/session/ScreenStateManager.h"
@@ -85,7 +85,7 @@ PortfolioScreen::PortfolioScreen(QWidget* parent) : QWidget(parent) {
             [this](QStringList /*dates*/, QVector<double> /*closes*/) {
                 // Recompute metrics now that SPY data is available for OLS beta.
                 // The chart consumes the per-symbol benchmark_history_loaded
-                // signal below — SPY here is purely a Beta signal.
+                // signal below 鈥?SPY here is purely a Beta signal.
                 if (summary_loaded_)
                     services::PortfolioService::instance().compute_metrics(current_summary_);
             });
@@ -159,7 +159,7 @@ void PortfolioScreen::hideEvent(QHideEvent* event) {
     status_bar_->stop_clock();
 }
 
-// ── Slots ────────────────────────────────────────────────────────────────────
+// 鈹€鈹€ Slots 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 
 void PortfolioScreen::changeEvent(QEvent* event) {
@@ -196,11 +196,11 @@ void PortfolioScreen::retranslateUi() {
                                               "of 12 major equities."));
 
     if (loading_label_)
-        loading_label_->setText(tr("Loading portfolio data…"));
+        loading_label_->setText(tr("Loading portfolio data鈥?));
     if (positions_title_label_)
         positions_title_label_->setText(tr("POSITIONS"));
     if (positions_filter_edit_)
-        positions_filter_edit_->setPlaceholderText(tr("Filter positions…"));
+        positions_filter_edit_->setPlaceholderText(tr("Filter positions鈥?));
 }
 
 void PortfolioScreen::refresh_theme() {
@@ -266,7 +266,7 @@ void PortfolioScreen::restore_state(const QVariantMap& state) {
         positions_filter_edit_->setText(state.value("filter").toString());
 }
 
-// ── IGroupLinked ─────────────────────────────────────────────────────────────
+// 鈹€鈹€ IGroupLinked 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 SymbolRef PortfolioScreen::current_symbol() const {
     if (selected_symbol_.isEmpty())
@@ -277,7 +277,7 @@ SymbolRef PortfolioScreen::current_symbol() const {
 void PortfolioScreen::on_group_symbol_changed(const SymbolRef& ref) {
     if (!ref.is_valid())
         return;
-    // Only react if the symbol is actually held — otherwise the group is
+    // Only react if the symbol is actually held 鈥?otherwise the group is
     // pointing at a ticker the user can't act on here, and silently
     // selecting a phantom would be misleading.
     if (!find_holding(ref.symbol))

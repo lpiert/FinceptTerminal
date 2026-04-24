@@ -8,7 +8,6 @@
 #include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
-#include <QHideEvent>
 #include <QPainter>
 #include <QStackedWidget>
 #include <QVBoxLayout>
@@ -167,8 +166,7 @@ void LoginScreen::changeEvent(QEvent* event) {
     }
     QWidget::changeEvent(event);
 }
-
-void LoginScreen::paintEvent(QPaintEvent* /*event*/) {
+void LoginScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter p(this);
     p.fillRect(rect(), QColor(ui::colors::BG_BASE()));
 

@@ -90,6 +90,7 @@ void ConfettiOverlay::show_confetti() {
 
 void ConfettiOverlay::spawn_burst(int count, float origin_x, float spread, float base_vy) {
     auto* rng = QRandomGenerator::global();
+    int w = width();
 
     for (int i = 0; i < count; ++i) {
         Particle p;
@@ -130,6 +131,7 @@ void ConfettiOverlay::tick() {
     elapsed_ms_ += timer_->interval();
     int h = height();
     int w = width();
+    float t = elapsed_ms_ / 1000.0f; // time in seconds
 
     // Fade out in the last 3 seconds
     float fade = 1.0f;

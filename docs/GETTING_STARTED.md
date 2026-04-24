@@ -47,7 +47,6 @@ Fincept Terminal is an **open-source financial analysis platform** — a free, o
 Optional (faster builds):
 - **Ninja** — parallel build system (auto-detected if installed)
 - **ccache** — compiler cache (auto-detected if installed)
-
 ### Step 1 — Install a C++20 Compiler
 
 #### Windows
@@ -80,8 +79,7 @@ Select **Qt 6.8.3** and your platform kit:
 - **Linux**: Desktop gcc 64-bit (default install: `~/Qt/6.8.3/gcc_64`)
 - **macOS**: macOS (default install: `~/Qt/6.8.3/macos`)
 
-**Linux system packages (alternative):**
-```bash
+**Linux system packages (alternative):**```bash
 sudo apt install -y \
   qt6-base-dev qt6-charts-dev qt6-tools-dev qt6-base-private-dev \
   libqt6sql6-sqlite libqt6websockets6-dev \
@@ -112,8 +110,7 @@ $env:QT_DIR = "C:\Qt\6.8.3\msvc2022_64"
 export QT_DIR=~/Qt/6.8.3/gcc_64
 
 # macOS
-export QT_DIR=~/Qt/6.8.3/macos
-```
+export QT_DIR=~/Qt/6.8.3/macos```
 
 **Option B — CMakeUserPresets.json (persistent per-clone):**
 ```bash

@@ -551,7 +551,7 @@ QWidget* ProfileScreen::build_support() {
         connect(b, &QPushButton::clicked, this, [url]() { QDesktopServices::openUrl(QUrl(url)); });
         lrl->addWidget(b);
     };
-    // DOCS / FAQ are localisable; GITHUB / DISCORD are brand names — left raw.
+    // DOCS / FAQ are localisable; GITHUB / DISCORD are brand names 鈥?left raw.
     make_link_btn(tr("DOCS"), "https://github.com/Fincept-Corporation/FinceptTerminal/tree/main/docs");
     make_link_btn(QStringLiteral("GITHUB"), "https://github.com/Fincept-Corporation/FinceptTerminal");
     make_link_btn(QStringLiteral("DISCORD"), "https://discord.gg/ae87a8ygbN");
@@ -609,10 +609,10 @@ void ProfileScreen::fetch_usage_data() {
     const auto& s = auth::AuthManager::instance().session();
     usg_credits_->setText(QString::number(s.user_info.credit_balance, 'f', 0));
     usg_plan_->setText(s.account_type().toUpper());
-    // /user/profile now returns the rate-limit window directly — show it
-    // immediately instead of "—" while /user/usage is in flight.
+    // /user/profile now returns the rate-limit window directly 鈥?show it
+    // immediately instead of "鈥? while /user/usage is in flight.
     const int rl_limit = s.user_info.rate_limit.limit;
-    usg_rate_->setText(rl_limit > 0 ? QString::number(rl_limit) : QStringLiteral("—"));
+    usg_rate_->setText(rl_limit > 0 ? QString::number(rl_limit) : QStringLiteral("鈥?));
 
     QPointer<ProfileScreen> self = this;
     auth::UserApi::instance().get_user_usage(30, [self](auth::ApiResponse r) {
@@ -839,7 +839,7 @@ void ProfileScreen::show_delete_account_dialog() {
     if (first != QMessageBox::Yes)
         return;
 
-    // Second confirmation — type email + enter password to confirm
+    // Second confirmation 鈥?type email + enter password to confirm
     auto* dlg = new QDialog(this);
     dlg->setWindowTitle(tr("Confirm Account Deletion"));
     dlg->setFixedSize(400, 260);

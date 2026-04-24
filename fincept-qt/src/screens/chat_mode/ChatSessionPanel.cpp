@@ -276,7 +276,7 @@ void ChatSessionPanel::on_export_clicked() {
     export_btn_->setEnabled(false);
     export_btn_->setText("...");
 
-    ChatModeService::instance().export_sessions(uuids, [this, path](bool ok, QJsonArray payload, QString err) {
+    ChatModeService::instance().export_sessions(uuids, [this, path](bool ok, QJsonArray data, QString err) {
         export_btn_->setEnabled(true);
         export_btn_->setText(tr("Export"));
         if (!ok) {
@@ -288,10 +288,9 @@ void ChatSessionPanel::on_export_clicked() {
             QMessageBox::warning(this, tr("Export Failed"), tr("Could not write file."));
             return;
         }
-        file.write(QJsonDocument(payload).toJson(QJsonDocument::Indented));
+        file.write(QJsonDocument(data).toJson(QJsonDocument::Indented));
         file.close();
-        QMessageBox::information(this, tr("Export"), tr("Exported %1 conversations.").arg(payload.size()));
-    });
+        QMessageBox::information(this, tr("Export"), tr("Exported %1 conversations.").arg(payload.size()));    });
 }
 
 void ChatSessionPanel::on_search_changed(const QString& text) {

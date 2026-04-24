@@ -281,8 +281,7 @@ void DocsScreen::build_sidebar() {
     add_item(geo, tr("Geopolitics"), "geopolitics");
     add_item(geo, tr("Maritime"), "maritime");
     add_item(geo, tr("Prediction Markets"), "polymarket");
-    add_item(geo, tr("Alt Investments"), "alt_investments");
-
+    add_item(geo, tr("Alt Investments"), "alt_investments");
     // ── Tools ────────────────────────────────────────────────────────────────
     auto* tools = add_category(tr("TOOLS"));
     add_item(tools, tr("Report Builder"), "report_builder");

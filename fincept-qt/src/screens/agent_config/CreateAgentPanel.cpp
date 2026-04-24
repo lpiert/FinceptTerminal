@@ -25,7 +25,13 @@
 #include <QUuid>
 #include <QVBoxLayout>
 
-namespace fincept::screens {
+    list_refresh_btn_ = new QPushButton(tr("REFRESH"));
+    list_refresh_btn_->setCursor(Qt::PointingHandCursor);
+    list_refresh_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:1px solid %3;padding:6px;"
+                                             "font-size:10px;font-weight:600;letter-spacing:1px;}"
+                                             "QPushButton:hover{background:%3;}")
+                                         .arg(ui::colors::BG_RAISED(), ui::colors::AMBER(), ui::colors::AMBER_DIM()));
+    connect(list_refresh_btn_, &QPushButton::clicked, this, []() {namespace fincept::screens {
 
 CreateAgentPanel::CreateAgentPanel(QWidget* parent) : QWidget(parent) {
     setObjectName("CreateAgentPanel");

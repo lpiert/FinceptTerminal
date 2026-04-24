@@ -130,24 +130,23 @@ TokenExchangeResponse AliceBlueBroker::exchange_token(const QString& api_key, co
     auto resp = BrokerHttp::instance().post_json(AUTH_URL, body, headers);
 
     if (!resp.success)
-        return {false, "", "", "", checked_error(resp, "Network error"), ""};
+        return {false, "", "", "", checked_error(resp, "Network error")};
 
     QString stat = resp.json["stat"].toString();
     if (stat != "Ok")
-        return {false, "", "", "", checked_error(resp, "Authentication failed"), ""};
+        return {false, "", "", "", checked_error(resp, "Authentication failed")};
 
     QString session = resp.json["userSession"].toString();
     QString client_id = resp.json["clientId"].toString();
 
     if (session.isEmpty())
-        return {false, "", "", "", "No userSession in response", ""};
+        return {false, "", "", "", "No userSession in response"};
 
     // AliceBlue session tokens are flushed at the daily reset; the live sweep is
     // authoritative — this is only a startup hint. No silent refresh (re-auth
     // needs a fresh web-login auth code).
     const QString extra = with_token_expiry({}, next_ist_flush_epoch(6, 0));
-    return {true, session, client_id, "", extra, ""};
-}
+    return {true, session, client_id, "", extra, ""};}
 
 // ============================================================================
 // Phase 3: Order operations

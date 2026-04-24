@@ -134,27 +134,27 @@ inline const char* chart_type_name(ChartType t) {
 }
 
 struct SurfaceCategory {
-    const char* name;
+    QString name;
     std::vector<ChartType> types;
 };
 
 inline std::vector<SurfaceCategory> get_surface_categories() {
     return {
-        {"EQUITY DERIV",
+        {QObject::tr("EQUITY DERIV"),
          {ChartType::Volatility, ChartType::DeltaSurface, ChartType::GammaSurface, ChartType::VegaSurface,
           ChartType::ThetaSurface, ChartType::SkewSurface, ChartType::LocalVolSurface}},
-        {"FIXED INCOME",
+        {QObject::tr("FIXED INCOME"),
          {ChartType::YieldCurve, ChartType::SwaptionVol, ChartType::CapFloorVol, ChartType::BondSpread,
           ChartType::OISBasis, ChartType::RealYield, ChartType::ForwardRate}},
-        {"FX", {ChartType::FXVol, ChartType::FXForwardPoints, ChartType::CrossCurrencyBasis}},
-        {"CREDIT", {ChartType::CDSSpread, ChartType::CreditTransition, ChartType::RecoveryRate}},
-        {"COMMODITIES",
+        {QObject::tr("FX"), {ChartType::FXVol, ChartType::FXForwardPoints, ChartType::CrossCurrencyBasis}},
+        {QObject::tr("CREDIT"), {ChartType::CDSSpread, ChartType::CreditTransition, ChartType::RecoveryRate}},
+        {QObject::tr("COMMODITIES"),
          {ChartType::CommodityForward, ChartType::CommodityVol, ChartType::CrackSpread,
           ChartType::ContangoBackwardation}},
-        {"RISK",
+        {QObject::tr("RISK"),
          {ChartType::Correlation, ChartType::PCA, ChartType::VaR, ChartType::StressTestPnL, ChartType::FactorExposure,
           ChartType::LiquidityHeatmap, ChartType::Drawdown, ChartType::BetaSurface, ChartType::ImpliedDividend}},
-        {"MACRO", {ChartType::InflationExpectations, ChartType::MonetaryPolicyPath}},
+        {QObject::tr("MACRO"), {ChartType::InflationExpectations, ChartType::MonetaryPolicyPath}},
     };
 }
 

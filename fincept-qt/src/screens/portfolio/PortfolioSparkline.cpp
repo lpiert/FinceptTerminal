@@ -19,8 +19,8 @@ PortfolioSparkline::PortfolioSparkline(int w, int h, QWidget* parent) : QWidget(
     });
 }
 
-void PortfolioSparkline::set_data(const QVector<double>& values) {
-    data_ = values;
+void PortfolioSparkline::set_data(const QVector<double>& data) {
+    data_ = data;
     dirty_ = true;
     update();
 }

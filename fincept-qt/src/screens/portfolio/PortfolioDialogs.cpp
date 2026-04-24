@@ -26,7 +26,7 @@
 
 namespace fincept::screens {
 
-// ── CreatePortfolioDialog ────────────────────────────────────────────────────
+// 鈹€鈹€ CreatePortfolioDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 CreatePortfolioDialog::CreatePortfolioDialog(QWidget* parent) : QDialog(parent) {
     setWindowTitle(tr("Create Portfolio"));
@@ -143,7 +143,7 @@ QString CreatePortfolioDialog::currency() const {
     return currency_cb_->currentText();
 }
 
-// ── ConfirmDeleteDialog ──────────────────────────────────────────────────────
+// 鈹€鈹€ ConfirmDeleteDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 ConfirmDeleteDialog::ConfirmDeleteDialog(const QString& portfolio_name, QWidget* parent)
     : QDialog(parent), portfolio_name_(portfolio_name) {
@@ -212,7 +212,7 @@ void ConfirmDeleteDialog::retranslateUi() {
     if (delete_btn_) delete_btn_->setText(tr("DELETE"));
 }
 
-// ── AddAssetDialog ───────────────────────────────────────────────────────────
+// 鈹€鈹€ AddAssetDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 static constexpr int kAssetSearchDebounceMs = 300;
 static constexpr int kAssetSearchLimit = 10;
@@ -246,7 +246,7 @@ AddAssetDialog::AddAssetDialog(QWidget* parent) : QDialog(parent) {
     form->setSpacing(8);
 
     symbol_edit_ = new QLineEdit;
-    symbol_edit_->setPlaceholderText(tr("e.g. AAPL, Apple, Reliance…"));
+    symbol_edit_->setPlaceholderText(tr("e.g. AAPL, Apple, Reliance鈥?));
     symbol_edit_->installEventFilter(this);
     symbol_row_label_ = new QLabel(tr("Symbol:"));
     form->addRow(symbol_row_label_, symbol_edit_);
@@ -292,7 +292,7 @@ AddAssetDialog::AddAssetDialog(QWidget* parent) : QDialog(parent) {
 
     layout->addLayout(btn_layout);
 
-    // ── Search dropdown (floats over the dialog, parented to this) ────────────
+    // 鈹€鈹€ Search dropdown (floats over the dialog, parented to this) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     search_frame_ = new QFrame(this);
     search_frame_->setObjectName("assetSearchFrame");
     search_frame_->setStyleSheet(
@@ -316,7 +316,7 @@ AddAssetDialog::AddAssetDialog(QWidget* parent) : QDialog(parent) {
     connect(search_list_, &QListWidget::itemClicked, this,
             [this](QListWidgetItem* item) { select_result(item->data(Qt::UserRole).toString()); });
 
-    // ── Debounce timer ────────────────────────────────────────────────────────
+    // 鈹€鈹€ Debounce timer 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     search_debounce_ = new QTimer(this);
     search_debounce_->setSingleShot(true);
     search_debounce_->setInterval(kAssetSearchDebounceMs);
@@ -517,7 +517,7 @@ void AddAssetDialog::retranslateUi() {
     if (symbol_row_label_)   symbol_row_label_->setText(tr("Symbol:"));
     if (quantity_row_label_) quantity_row_label_->setText(tr("Quantity:"));
     if (price_row_label_)    price_row_label_->setText(tr("Price:"));
-    if (symbol_edit_)        symbol_edit_->setPlaceholderText(tr("e.g. AAPL, Apple, Reliance…"));
+    if (symbol_edit_)        symbol_edit_->setPlaceholderText(tr("e.g. AAPL, Apple, Reliance鈥?));
     if (quantity_edit_)      quantity_edit_->setPlaceholderText(tr("e.g. 10"));
     if (price_edit_)         price_edit_->setPlaceholderText(tr("e.g. 150.00"));
     if (cancel_btn_)         cancel_btn_->setText(tr("CANCEL"));
@@ -534,7 +534,7 @@ double AddAssetDialog::price() const {
     return price_edit_->text().toDouble();
 }
 
-// ── SellAssetDialog ──────────────────────────────────────────────────────────
+// 鈹€鈹€ SellAssetDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 SellAssetDialog::SellAssetDialog(const QString& symbol, double held_qty, QWidget* parent)
     : QDialog(parent), symbol_(symbol), held_qty_(held_qty) {
@@ -632,7 +632,7 @@ double SellAssetDialog::price() const {
     return price_edit_->text().toDouble();
 }
 
-// ── ImportPortfolioDialog ────────────────────────────────────────────────────
+// 鈹€鈹€ ImportPortfolioDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 ImportPortfolioDialog::ImportPortfolioDialog(const QVector<portfolio::Portfolio>& portfolios, QWidget* parent)
     : QDialog(parent) {
@@ -847,7 +847,7 @@ QString ImportPortfolioDialog::merge_target_id() const {
     return target_cb_->currentData().toString();
 }
 
-// ── EditTransactionDialog ────────────────────────────────────────────────────
+// 鈹€鈹€ EditTransactionDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 EditTransactionDialog::EditTransactionDialog(const portfolio::Transaction& txn, QWidget* parent)
     : QDialog(parent), txn_type_(txn.transaction_type), txn_symbol_(txn.symbol) {
@@ -865,7 +865,7 @@ EditTransactionDialog::EditTransactionDialog(const portfolio::Transaction& txn, 
     layout->setSpacing(10);
     layout->setContentsMargins(20, 16, 20, 16);
 
-    title_label_ = new QLabel(tr("EDIT %1 — %2").arg(txn_type_, txn_symbol_));
+    title_label_ = new QLabel(tr("EDIT %1 鈥?%2").arg(txn_type_, txn_symbol_));
     title_label_->setStyleSheet(
         QString("color:%1; font-size:13px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title_label_);
@@ -944,7 +944,7 @@ void EditTransactionDialog::changeEvent(QEvent* event) {
 
 void EditTransactionDialog::retranslateUi() {
     setWindowTitle(tr("Edit Transaction"));
-    if (title_label_)        title_label_->setText(tr("EDIT %1 — %2").arg(txn_type_, txn_symbol_));
+    if (title_label_)        title_label_->setText(tr("EDIT %1 鈥?%2").arg(txn_type_, txn_symbol_));
     if (quantity_row_label_) quantity_row_label_->setText(tr("Quantity:"));
     if (price_row_label_)    price_row_label_->setText(tr("Price:"));
     if (date_row_label_)     date_row_label_->setText(tr("Date:"));
@@ -967,7 +967,7 @@ QString EditTransactionDialog::notes() const {
     return notes_edit_->text().trimmed();
 }
 
-// ── SectorMappingDialog ──────────────────────────────────────────────────────
+// 鈹€鈹€ SectorMappingDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 static const QStringList kSectors = {
     "Technology",  "Healthcare",    "Financial Services", "Energy",    "Consumer Cyclical", "Consumer Defensive",
@@ -1075,7 +1075,7 @@ QHash<QString, QString> SectorMappingDialog::sector_map() const {
     return result;
 }
 
-// ── AddDividendDialog ─────────────────────────────────────────────────────────
+// 鈹€鈹€ AddDividendDialog 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 static QString kDividendStyle(const QString& accent) {
     return QString("QDialog { background:%1; color:%2; }"

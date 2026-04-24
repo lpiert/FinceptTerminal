@@ -1,4 +1,4 @@
-// PythonEnvSection.cpp — Python venv package manager panel.
+// PythonEnvSection.cpp 鈥?Python venv package manager panel.
 #include "screens/settings/PythonEnvSection.h"
 
 #include "core/logging/Logger.h"
@@ -22,7 +22,7 @@
 
 namespace fincept::screens {
 
-// ── Style helpers (live — read active theme tokens) ───────────────────────────
+// 鈹€鈹€ Style helpers (live 鈥?read active theme tokens) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 static QString section_title_ss() {
     return QString("color:%1;font-weight:bold;letter-spacing:0.5px;background:transparent;")
@@ -85,7 +85,7 @@ static QString progress_ss() {
         .arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM(), ui::colors::AMBER());
 }
 
-// ── Canonical name normalisation (mirrors PythonSetupManager logic) ───────────
+// 鈹€鈹€ Canonical name normalisation (mirrors PythonSetupManager logic) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 QString PythonEnvSection::canonicalise(const QString& name) {
     QString n = name.toLower();
@@ -94,7 +94,7 @@ QString PythonEnvSection::canonicalise(const QString& name) {
     return n;
 }
 
-// ── Constructor ───────────────────────────────────────────────────────────────
+// 鈹€鈹€ Constructor 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 PythonEnvSection::PythonEnvSection(QWidget* parent) : QWidget(parent) {
     list_proc_   = new QProcess(this);
@@ -111,7 +111,7 @@ PythonEnvSection::PythonEnvSection(QWidget* parent) : QWidget(parent) {
     build_ui();
 }
 
-// ── build_ui ──────────────────────────────────────────────────────────────────
+// 鈹€鈹€ build_ui 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::build_ui() {
     auto* root = new QVBoxLayout(this);
@@ -133,7 +133,7 @@ void PythonEnvSection::build_ui() {
     root->addWidget(info_lbl_);
     root->addSpacing(10);
 
-    // ── Warning banner ────────────────────────────────────────────────────────
+    // 鈹€鈹€ Warning banner 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     auto* warn_frame = new QFrame(this);
     warn_frame->setFrameShape(QFrame::NoFrame);
     warn_frame->setStyleSheet(
@@ -143,7 +143,7 @@ void PythonEnvSection::build_ui() {
     warn_layout->setContentsMargins(10, 7, 10, 7);
     warn_layout->setSpacing(8);
 
-    auto* warn_icon = new QLabel("⚠", this);
+    auto* warn_icon = new QLabel("鈿?, this);
     warn_icon->setStyleSheet(
         QString("color:%1;font-size:14px;background:transparent;font-weight:bold;")
             .arg(ui::colors::AMBER()));
@@ -163,7 +163,7 @@ void PythonEnvSection::build_ui() {
     root->addWidget(warn_frame);
     root->addSpacing(14);
 
-    // ── Toolbar row ───────────────────────────────────────────────────────────
+    // 鈹€鈹€ Toolbar row 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     auto* toolbar = new QWidget(this);
     auto* thl = new QHBoxLayout(toolbar);
     thl->setContentsMargins(0, 0, 0, 0);
@@ -200,7 +200,7 @@ void PythonEnvSection::build_ui() {
     root->addWidget(toolbar);
     root->addSpacing(10);
 
-    // ── Package table ─────────────────────────────────────────────────────────
+    // 鈹€鈹€ Package table 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     pkg_table_ = new QTableWidget(0, 7, this);
     pkg_table_->setHorizontalHeaderLabels(
         {"", tr("Package"), tr("Venv"), tr("Required"), tr("Installed"), tr("Status"), tr("Action")});
@@ -225,7 +225,7 @@ void PythonEnvSection::build_ui() {
     root->addWidget(pkg_table_, 1);
     root->addSpacing(8);
 
-    // ── Bottom bar: batch button + status ─────────────────────────────────────
+    // 鈹€鈹€ Bottom bar: batch button + status 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     auto* bottom = new QWidget(this);
     auto* bhl = new QHBoxLayout(bottom);
     bhl->setContentsMargins(0, 0, 0, 0);
@@ -244,7 +244,7 @@ void PythonEnvSection::build_ui() {
     root->addWidget(bottom);
     root->addSpacing(8);
 
-    // ── Progress bar + log line ───────────────────────────────────────────────
+    // 鈹€鈹€ Progress bar + log line 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     install_bar_ = new QProgressBar(this);
     install_bar_->setRange(0, 100);
     install_bar_->setValue(0);
@@ -261,7 +261,7 @@ void PythonEnvSection::build_ui() {
     install_log_->setVisible(false);
     root->addWidget(install_log_);
 
-    // ── Signal connections ────────────────────────────────────────────────────
+    // 鈹€鈹€ Signal connections 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     connect(refresh_btn_, &QPushButton::clicked, this, &PythonEnvSection::load_packages);
 
     connect(search_input_, &QLineEdit::textChanged, this, &PythonEnvSection::apply_filter);
@@ -315,7 +315,7 @@ void PythonEnvSection::build_ui() {
     });
 }
 
-// ── showEvent ─────────────────────────────────────────────────────────────────
+// 鈹€鈹€ showEvent 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::showEvent(QShowEvent* e) {
     QWidget::showEvent(e);
@@ -327,8 +327,8 @@ void PythonEnvSection::reload() {
     load_packages();
 }
 
-// ── Requirements file resolution ──────────────────────────────────────────────
-// Mirrors PythonSetupManager::find_requirements_file() — walks up from exe dir.
+// 鈹€鈹€ Requirements file resolution 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Mirrors PythonSetupManager::find_requirements_file() 鈥?walks up from exe dir.
 
 QString PythonEnvSection::find_req_file(const QString& filename) const {
     QString exe_dir = QCoreApplication::applicationDirPath();
@@ -359,7 +359,7 @@ QString PythonEnvSection::find_req_file(const QString& filename) const {
     return {};
 }
 
-// ── parse_requirements ────────────────────────────────────────────────────────
+// 鈹€鈹€ parse_requirements 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 // Reads one requirements file, appends PackageRow entries to all_packages_.
 // Mirrors PythonSetupManager::read_packages_from_file() parsing rules.
 
@@ -378,7 +378,7 @@ void PythonEnvSection::parse_requirements(const QString& req_file,
         return;
     }
 
-    // Version specifier regex — strips ">=1.2,<3.0" and extras "[torch]" from name
+    // Version specifier regex 鈥?strips ">=1.2,<3.0" and extras "[torch]" from name
     static const QRegularExpression kVerRe(R"([><=!~\s\[].*)");
 
     while (!f.atEnd()) {
@@ -407,13 +407,13 @@ void PythonEnvSection::parse_requirements(const QString& req_file,
     }
 }
 
-// ── load_packages ─────────────────────────────────────────────────────────────
+// 鈹€鈹€ load_packages 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::load_packages() {
     using python::PythonSetupManager;
 
     if (!QFileInfo::exists(PythonSetupManager::instance().uv_path())) {
-        show_status(tr("Python environment not set up — run Setup first"), true);
+        show_status(tr("Python environment not set up 鈥?run Setup first"), true);
         return;
     }
 
@@ -434,7 +434,7 @@ void PythonEnvSection::load_packages() {
     start_list_venv("venv-numpy1");
 }
 
-// ── start_list_venv ───────────────────────────────────────────────────────────
+// 鈹€鈹€ start_list_venv 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::start_list_venv(const QString& venv_name) {
     using python::PythonSetupManager;
@@ -468,7 +468,7 @@ void PythonEnvSection::start_list_venv(const QString& venv_name) {
     LOG_DEBUG("PythonEnv", "Started uv pip list for " + venv_name);
 }
 
-// ── on_list_finished ──────────────────────────────────────────────────────────
+// 鈹€鈹€ on_list_finished 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::on_list_finished(const QString& venv_name, int exit_code) {
     QMap<QString, QString>& target = (venv_name == "venv-numpy1") ? installed_v1_ : installed_v2_;
@@ -488,7 +488,7 @@ void PythonEnvSection::on_list_finished(const QString& venv_name, int exit_code)
                  QString("[%1] parsed %2 installed packages").arg(venv_name).arg(target.size()));
     } else {
         LOG_WARN("PythonEnv",
-                 QString("[%1] uv pip list failed (exit=%2) — treating as empty")
+                 QString("[%1] uv pip list failed (exit=%2) 鈥?treating as empty")
                      .arg(venv_name).arg(exit_code));
     }
 
@@ -503,7 +503,7 @@ void PythonEnvSection::on_list_finished(const QString& venv_name, int exit_code)
     }
 }
 
-// ── merge_and_populate_table ──────────────────────────────────────────────────
+// 鈹€鈹€ merge_and_populate_table 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::merge_and_populate_table() {
     for (auto& row : all_packages_) {
@@ -554,7 +554,7 @@ void PythonEnvSection::merge_and_populate_table() {
         name_item->setForeground(QColor(ui::colors::TEXT_PRIMARY()));
         pkg_table_->setItem(i, 1, name_item);
 
-        // Col 2: venv label — Trading=blue, Analytics=amber so they're visually distinct
+        // Col 2: venv label 鈥?Trading=blue, Analytics=amber so they're visually distinct
         auto* venv_item = new QTableWidgetItem(row.venv_label);
         venv_item->setForeground(QColor(
             row.venv == "venv-numpy1" ? "#38bdf8" : ui::colors::AMBER()));
@@ -570,7 +570,7 @@ void PythonEnvSection::merge_and_populate_table() {
         pkg_table_->setItem(i, 3, req_item);
 
         // Col 4: installed version
-        auto* inst_item = new QTableWidgetItem(row.missing ? QString("—") : row.installed_ver);
+        auto* inst_item = new QTableWidgetItem(row.missing ? QString("鈥?) : row.installed_ver);
         inst_item->setForeground(QColor(row.missing ? ui::colors::TEXT_TERTIARY() : ui::colors::TEXT_PRIMARY()));
         inst_item->setTextAlignment(Qt::AlignCenter);
         pkg_table_->setItem(i, 4, inst_item);
@@ -602,7 +602,7 @@ void PythonEnvSection::merge_and_populate_table() {
     pkg_table_->setUpdatesEnabled(true);
 
     show_status(
-        tr("%1 packages — %2 missing").arg(total).arg(missing),
+        tr("%1 packages 鈥?%2 missing").arg(total).arg(missing),
         missing > 0);
 
     LOG_INFO("PythonEnv",
@@ -611,7 +611,7 @@ void PythonEnvSection::merge_and_populate_table() {
     apply_filter();
 }
 
-// ── on_row_action_clicked ────────────────────────────────────────────────────
+// 鈹€鈹€ on_row_action_clicked 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::on_row_action_clicked(int row) {
     if (row < 0 || row >= all_packages_.size())
@@ -626,7 +626,7 @@ void PythonEnvSection::on_row_action_clicked(int row) {
     start_action({batch});
 }
 
-// ── build_batches_for_selected ────────────────────────────────────────────────
+// 鈹€鈹€ build_batches_for_selected 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 QList<PythonEnvSection::ActionBatch> PythonEnvSection::build_batches_for_selected() const {
     ActionBatch b1, b2;
@@ -664,7 +664,7 @@ QList<PythonEnvSection::ActionBatch> PythonEnvSection::build_batches_for_selecte
     return result;
 }
 
-// ── start_action ──────────────────────────────────────────────────────────────
+// 鈹€鈹€ start_action 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::start_action(const QList<ActionBatch>& batches) {
     if (batches.isEmpty())
@@ -680,7 +680,7 @@ void PythonEnvSection::start_action(const QList<ActionBatch>& batches) {
     run_next_batch();
 }
 
-// ── run_next_batch ────────────────────────────────────────────────────────────
+// 鈹€鈹€ run_next_batch 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::run_next_batch() {
     using python::PythonSetupManager;
@@ -737,7 +737,7 @@ void PythonEnvSection::run_next_batch() {
     action_proc_->start(mgr.uv_path(), args);
 }
 
-// ── on_action_finished ────────────────────────────────────────────────────────
+// 鈹€鈹€ on_action_finished 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::on_action_finished(int exit_code) {
     install_bar_->setVisible(false);
@@ -745,7 +745,7 @@ void PythonEnvSection::on_action_finished(int exit_code) {
     set_actions_enabled(true);
 
     if (exit_code == 0) {
-        show_status(tr("Install complete — refreshing..."));
+        show_status(tr("Install complete 鈥?refreshing..."));
         LOG_INFO("PythonEnv", "Install/upgrade finished successfully");
     } else {
         show_status(tr("Install finished with errors (exit %1)").arg(exit_code), true);
@@ -755,7 +755,7 @@ void PythonEnvSection::on_action_finished(int exit_code) {
     load_packages();
 }
 
-// ── apply_filter ──────────────────────────────────────────────────────────────
+// 鈹€鈹€ apply_filter 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::apply_filter() {
     const QString search   = search_input_->text().trimmed().toLower();
@@ -779,7 +779,7 @@ void PythonEnvSection::apply_filter() {
     }
 }
 
-// ── set_actions_enabled ───────────────────────────────────────────────────────
+// 鈹€鈹€ set_actions_enabled 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::set_actions_enabled(bool enabled) {
     refresh_btn_->setEnabled(enabled);
@@ -797,7 +797,7 @@ void PythonEnvSection::set_actions_enabled(bool enabled) {
     }
 }
 
-// ── show_status ───────────────────────────────────────────────────────────────
+// 鈹€鈹€ show_status 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::show_status(const QString& msg, bool error) {
     status_lbl_->setText(msg);
@@ -806,7 +806,7 @@ void PythonEnvSection::show_status(const QString& msg, bool error) {
             .arg(error ? ui::colors::NEGATIVE() : ui::colors::TEXT_SECONDARY()));
 }
 
-// ── changeEvent / retranslateUi ───────────────────────────────────────────────
+// 鈹€鈹€ changeEvent / retranslateUi 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void PythonEnvSection::changeEvent(QEvent* event) {
     if (event->type() == QEvent::LanguageChange)

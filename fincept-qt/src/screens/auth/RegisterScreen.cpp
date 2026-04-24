@@ -8,7 +8,6 @@
 #include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
-#include <QHideEvent>
 #include <QPainter>
 #include <QVBoxLayout>
 
@@ -165,8 +164,7 @@ void RegisterScreen::changeEvent(QEvent* event) {
     }
     QWidget::changeEvent(event);
 }
-
-void RegisterScreen::paintEvent(QPaintEvent* /*event*/) {
+void RegisterScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter p(this);
     p.fillRect(rect(), QColor(ui::colors::BG_BASE()));
 

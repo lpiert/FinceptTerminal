@@ -325,7 +325,10 @@ void QuantModulePanel::build_ui() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GENERIC PANEL — for modules without specialized UI
+    auto* card = make_section_card(tr("CONFIGURED LLM PROVIDERS"), &llm_list_layout_, &llm_section_refresh_, tr("REFRESH"),
+                                   &llm_section_title_);
+    if (llm_section_refresh_) {
+        connect(llm_section_refresh_, &QPushButton::clicked, this, [this]() {// GENERIC PANEL — for modules without specialized UI
 // ═══════════════════════════════════════════════════════════════════════════════
 
 QWidget* QuantModulePanel::build_generic_panel() {
@@ -432,8 +435,7 @@ void QuantModulePanel::display_error(const QString& msg) {
 
 // ── Loading spinner shown while a Python op is in flight ─────────────────────
 
-void QuantModulePanel::show_loading(const QString& message) {
-    clear_results();
+void QuantModulePanel::show_loading(const QString& message) {    clear_results();
     status_label_->setText(message);
 
     // Container card
@@ -462,8 +464,7 @@ void QuantModulePanel::show_loading(const QString& message) {
     connect(timer, &QTimer::timeout, box, [spin_guard, frame_idx]() mutable {
         if (!spin_guard) return;
         frame_idx = (frame_idx + 1) % kFrames.size();
-        spin_guard->setText(kFrames[frame_idx]);
-    });
+        spin_guard->setText(kFrames[frame_idx]);    });
     timer->start();
 
     auto* msg = new QLabel(message, box);
@@ -490,7 +491,33 @@ void QuantModulePanel::show_loading(const QString& message) {
     results_layout_->addWidget(box);
 }
 
+    // Container card
+    auto* box = new QWidget(this);
+    box->setStyleSheet(QString("background:%1; border:1px solid %2; border-radius:3px;")
+                           .arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
+    auto* hl = new QHBoxLayout(box);
+    hl->setContentsMargins(16, 14, 16, 14);
+    hl->setSpacing(14);
 
+    // Animated ASCII-style spinner (avoids needing a QMovie/gif resource).
+    // Updates 5 frames/sec via a single QTimer parented to the box, so it's
+    // garbage-collected automatically when the box is replaced by results.
+    auto* spinner = new QLabel(box);
+    spinner->setFixedSize(20, 20);
+    spinner->setStyleSheet(QString("color:%1; font-size:18px; font-weight:700; "
+                                   "font-family:'Courier New'; background:transparent;")
+                               .arg(module_.color.name()));
+    static const QStringList kFrames = {"|", "/", "-", "\\"};
+    spinner->setText(kFrames[0]);
+
+    auto* timer = new QTimer(box);
+    timer->setInterval(120);
+    int frame_idx = 0;
+    QPointer<QLabel> spin_guard(spinner);
+    connect(timer, &QTimer::timeout, box, [spin_guard, frame_idx]() mutable {
+        if (!spin_guard) return;
+        frame_idx = (frame_idx + 1) % kFrames.size();
+        spin_guard->setText(kFrames[frame_idx]);
 void QuantModulePanel::on_error(const QString& module_id, const QString& message) {
     if (module_id != module_.id)
         return;

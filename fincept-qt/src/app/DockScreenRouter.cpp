@@ -99,8 +99,7 @@ QString DockScreenRouter::title_for_id(const QString& id) {
         {"terms", QT_TRANSLATE_NOOP("fincept::DockScreenRouter", "Terms")},
         {"privacy", QT_TRANSLATE_NOOP("fincept::DockScreenRouter", "Privacy")},
         {"trademarks", QT_TRANSLATE_NOOP("fincept::DockScreenRouter", "Trademarks")},
-        {"help", QT_TRANSLATE_NOOP("fincept::DockScreenRouter", "Help")},
-    };
+        {"help", QT_TRANSLATE_NOOP("fincept::DockScreenRouter", "Help")},    };
     auto it = titles.find(id);
     if (it == titles.end())
         return id;
@@ -315,8 +314,7 @@ DockScreenRouter::~DockScreenRouter() {
     // after WindowFrame destruction.
     for (auto it = instance_ids_.constBegin(); it != instance_ids_.constEnd(); ++it)
         PanelRegistry::instance().unregister_panel(it.value());
-    instance_ids_.clear();
-}
+    instance_ids_.clear();}
 
 PanelInstanceId DockScreenRouter::panel_uuid_for(const QString& id) const {
     return instance_ids_.value(id);

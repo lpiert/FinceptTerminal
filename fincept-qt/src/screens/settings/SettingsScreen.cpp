@@ -1,4 +1,4 @@
-// SettingsScreen.cpp — thin shell hosting nav + a QStackedWidget of section
+// SettingsScreen.cpp 鈥?thin shell hosting nav + a QStackedWidget of section
 // widgets. All per-section state and rendering lives in *Section.h/.cpp.
 
 #include "screens/settings/SettingsScreen.h"
@@ -59,7 +59,7 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     nvl->addWidget(nav_title_);
     nvl->addSpacing(12);
 
-    // ── Section factories ────────────────────────────────────────────────────
+    // 鈹€鈹€ Section factories 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     // One factory per stack index. Used at construction AND by the language-
     // change rebuild path so we don't hardcode the type list twice.
     section_factories_.clear();
@@ -150,7 +150,7 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     refresh_theme();
 
     // Language changes mean every section needs fresh tr() lookups. We rebuild
-    // each section by constructing a new instance via its factory — simpler
+    // each section by constructing a new instance via its factory 鈥?simpler
     // and more reliable than threading retranslateUi() through every section.
     connect(&i18n::LanguageManager::instance(), &i18n::LanguageManager::language_changed,
             this, [this](const QString&) { rebuild_sections_for_language_change(); });
@@ -177,7 +177,7 @@ void SettingsScreen::rebuild_sections_for_language_change() {
     if (!sections_) return;
     const int current = sections_->currentIndex();
     // Replace each widget in-place. We insert at the same index first, then
-    // remove the old widget — preserves index ordering for nav buttons.
+    // remove the old widget 鈥?preserves index ordering for nav buttons.
     for (int i = 0; i < section_factories_.size(); ++i) {
         if (!section_factories_[i]) continue;
         QWidget* old = sections_->widget(i);
@@ -193,12 +193,12 @@ void SettingsScreen::rebuild_sections_for_language_change() {
 
 void SettingsScreen::wire_section_signals() {
     if (!sections_) return;
-    // LLM config changes → reload AI chat service.
+    // LLM config changes 鈫?reload AI chat service.
     if (auto* llm = qobject_cast<LlmConfigSection*>(sections_->widget(5))) {
         connect(llm, &LlmConfigSection::config_changed, this,
                 []() { ai_chat::LlmService::instance().reload_config(); });
     }
-    // Voice config changes → reload BOTH STT and TTS services and restart
+    // Voice config changes 鈫?reload BOTH STT and TTS services and restart
     // the clap detector so the user's new provider / key / voice / wake-trigger
     // picks take effect on the next session.
     if (auto* voice = qobject_cast<VoiceConfigSection*>(sections_->widget(13))) {
@@ -252,7 +252,7 @@ void SettingsScreen::reload_visible_section() {
     w->show();
 }
 
-// ── MCP-driven UI sync ──────────────────────────────────────────────────────
+// 鈹€鈹€ MCP-driven UI sync 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 void SettingsScreen::subscribe_mcp_events() {
     if (!mcp_event_subs_.isEmpty()) return; // idempotent

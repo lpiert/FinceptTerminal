@@ -502,7 +502,7 @@ void NewsService::summarize_headlines(const QVector<NewsArticle>& articles, int 
     body["headlines"] = headline_array;
     body["count"] = count;
 
-    HttpClient::instance().post("/news/summarize", body, [cb, sig](Result<QJsonDocument> result) {
+    HttpClient::instance().post("/news/summarize", body, [this, cb, sig](Result<QJsonDocument> result) {
         if (result.is_err()) {
             LOG_WARN("NewsService", "Summarization failed: " + QString::fromStdString(result.error()));
             cb(false, {});
@@ -538,7 +538,20 @@ void NewsService::stop_auto_refresh() {
     refresh_timer_->stop();
 }
 
-QStringList NewsService::topic_patterns() const {
+    // ── Display-name cache (symbol → human-readable name) ──
+    // Persisted to SettingsRepository so resolution survives restarts and the
+    // per-symbol yfinance .info cost is paid at most once.
+    void load_name_cache();
+    void persist_name_cache();
+    QHash<QString, QString> name_cache_;
+    QHash<QString, QString> currency_cache_;  // symbol → ISO currency code (e.g. "USD")
+    bool name_cache_loaded_ = false;
+
+    // ── Batching ──
+    struct PendingRequest {
+        QStringList symbols;
+        QuoteCallback cb;
+    };QStringList NewsService::topic_patterns() const {
     return {QStringLiteral("news:general"),
             QStringLiteral("news:symbol:*"),
             QStringLiteral("news:category:*"),

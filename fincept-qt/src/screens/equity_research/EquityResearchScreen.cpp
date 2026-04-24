@@ -47,8 +47,8 @@ EquityResearchScreen::EquityResearchScreen(QWidget* parent) : QWidget(parent) {
     connect(&svc, &services::equity::EquityResearchService::info_loaded, this, &EquityResearchScreen::on_info_loaded);
 
     // Listen for navigation from CommandBar asset search
-    EventBus::instance().subscribe("equity_research.load_symbol", [this](const QVariantMap& payload) {
-        const QString symbol = payload.value("symbol").toString();
+    EventBus::instance().subscribe("equity_research.load_symbol", [this](const QVariantMap& data) {
+        const QString symbol = data.value("symbol").toString();
         if (!symbol.isEmpty())
             load_symbol(symbol);
     });

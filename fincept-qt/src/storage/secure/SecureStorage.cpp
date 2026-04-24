@@ -206,8 +206,7 @@ Result<void> SecureStorage::store(const QString& key, const QString& value) {
     if (tag.size() != kTagLen) {
         // aes_gcm_encrypt already logged the OpenSSL error.
         return Result<void>::err("Encryption failed");
-    }
-
+    }
     QSqlQuery q(db.raw_db());
     q.prepare(R"sql(
         INSERT INTO secure_credentials (key, ciphertext, iv, tag, updated_at)
@@ -243,8 +242,7 @@ Result<QString> SecureStorage::retrieve(const QString& key) {
                            .arg(key, q.lastError().text()));
         return Result<QString>::err("Read failed");
     }
-    if (!q.next())
-        return Result<QString>::err("Not found");
+    if (!q.next())        return Result<QString>::err("Not found");
 
     const QByteArray ciphertext = q.value(0).toByteArray();
     const QByteArray iv = q.value(1).toByteArray();
@@ -278,6 +276,6 @@ Result<void> SecureStorage::remove(const QString& key) {
         return Result<void>::err("Delete failed");
     }
     return Result<void>::ok();
-}
+    if (!q.next())}
 
 } // namespace fincept

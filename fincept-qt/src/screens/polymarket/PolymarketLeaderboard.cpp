@@ -3,7 +3,6 @@
 #include "ui/theme/Theme.h"
 
 #include <QHeaderView>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
 
@@ -46,23 +45,15 @@ PolymarketLeaderboard::PolymarketLeaderboard(QWidget* parent) : QWidget(parent) 
     table_->setColumnCount(5);
     table_->setHorizontalHeaderLabels({tr("#"), tr("TRADER"), tr("PNL"), tr("VOLUME"), tr("TRADES")});
     table_->horizontalHeader()->setStretchLastSection(true);
-    table_->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     table_->verticalHeader()->setVisible(false);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    table_->setShowGrid(false);
     table_->setStyleSheet(
-        QString("QTableWidget { background: %1; color: %2; border: none; font-size: 10px; }"
-                "QTableWidget::item { padding: 3px 8px; border-bottom: 1px solid %3; }"
-                "QTableWidget::item:selected { background: %4; color: %2; }"
-                "QHeaderView::section { background: %5; color: %6; border: none;"
-                "  border-bottom: 1px solid %3; padding: 5px 8px;"
-                "  font-size: 8px; font-weight: 700; letter-spacing: 0.5px; }"
-                "QScrollBar:vertical { background: %1; width: 4px; border: none; }"
-                "QScrollBar::handle:vertical { background: %3; min-height: 20px; }"
-                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }")
-            .arg(colors::BG_BASE(), colors::TEXT_PRIMARY(), colors::BORDER_DIM(),
-                 colors::BG_HOVER(), colors::BG_RAISED(), colors::TEXT_SECONDARY()));
+        QString("QTableWidget { background: %1; color: %2; border: none; gridline-color: %3; font-size: 11px; }"
+                "QTableWidget::item { padding: 2px 6px; border-bottom: 1px solid %3; }"
+                "QHeaderView::section { background: %4; color: %5; border: none; "
+                "  border-bottom: 1px solid %3; padding: 4px 6px; font-size: 10px; font-weight: 700; }")
+            .arg(colors::BG_BASE(), colors::TEXT_PRIMARY(), colors::BORDER_DIM(), colors::BG_RAISED(), colors::TEXT_SECONDARY()));
     vl->addWidget(table_, 1);
 }
 

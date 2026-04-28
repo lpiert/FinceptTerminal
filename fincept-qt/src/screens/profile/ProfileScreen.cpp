@@ -568,13 +568,13 @@ void ProfileScreen::refresh_all() {
     const auto& s = auth::AuthManager::instance().session();
     if (!s.authenticated)
         return;
+    
     username_header_->setText(s.user_info.username.isEmpty() ? s.user_info.email : s.user_info.username);
     credits_badge_->setText(tr("CR %1").arg(s.user_info.credit_balance, 0, 'f', 2));
     plan_badge_->setText(s.account_type().toUpper());
     ov_username_->setText(s.user_info.username.isEmpty() ? tr("N/A") : s.user_info.username);
     ov_email_->setText(s.user_info.email.isEmpty() ? tr("N/A") : s.user_info.email);
-    ov_user_type_->setText(tr("REGISTERED"));
-    ov_account_type_->setText(s.account_type().toUpper());
+    ov_user_type_->setText(tr("REGISTERED"));    ov_account_type_->setText(s.account_type().toUpper());
     ov_account_type_->setStyleSheet(
         QString("color:%1;font-size:13px;font-weight:700;background:transparent;%2").arg(ui::colors::AMBER(), MF));
     ov_phone_->setText(s.user_info.phone.isEmpty() ? "\xe2\x80\x94" : s.user_info.phone);
@@ -587,7 +587,22 @@ void ProfileScreen::refresh_all() {
     ov_mfa_->setStyleSheet(QString("color:%1;font-size:13px;font-weight:700;background:transparent;%2")
                                .arg(s.user_info.mfa_enabled ? ui::colors::POSITIVE() : ui::colors::NEGATIVE())
                                .arg(MF));
-    ov_credits_big_->setText(QString::number(static_cast<int>(s.user_info.credit_balance)));
+    
+    // [FREE-MODE] Display ∞ for unlimited credits
+    if (is_unlimited) {
+        ov_credits_big_->setText("∞");
+        ov_credits_big_->setStyleSheet(
+            QString("color:%1;font-size:42px;font-weight:700;background:transparent;padding:20px 0 4px 0;%2")
+                .arg("#22c55e")  // green
+                .arg(MF));
+    } else {
+        ov_credits_big_->setText(QString::number(static_cast<int>(s.user_info.credit_balance)));
+        ov_credits_big_->setStyleSheet(
+            QString("color:%1;font-size:42px;font-weight:700;background:transparent;padding:20px 0 4px 0;%2")
+                .arg(ui::colors::CYAN())
+                .arg(MF));
+    }
+    
     ov_plan_->setText(s.account_type().toUpper());
     ov_plan_->setStyleSheet(
         QString("color:%1;font-size:13px;font-weight:700;background:transparent;%2").arg(ui::colors::AMBER(), MF));
@@ -600,14 +615,36 @@ void ProfileScreen::refresh_all() {
                                 .arg(s.user_info.mfa_enabled ? ui::colors::POSITIVE() : ui::colors::TEXT_SECONDARY())
                                 .arg(MF));
     bill_plan_->setText(s.account_type().toUpper());
-    bill_credits_->setText(QString::number(s.user_info.credit_balance, 'f', 2));
+    
+    // [FREE-MODE] Show UNLIMITED in billing section too
+    if (is_unlimited) {
+        bill_credits_->setText("UNLIMITED");
+        bill_credits_->setStyleSheet(
+            QString("color:%1;font-size:13px;font-weight:700;background:transparent;%2")
+                .arg("#22c55e")
+                .arg(MF));
+    } else {
+        bill_credits_->setText(QString::number(s.user_info.credit_balance, 'f', 2));
+    }
     // bill_support_ is populated by fetch_billing_data() from the API; leave it as-is here
 }
 
 void ProfileScreen::fetch_usage_data() {
     // Populate stat boxes with session data as fallback
     const auto& s = auth::AuthManager::instance().session();
-    usg_credits_->setText(QString::number(s.user_info.credit_balance, 'f', 0));
+    
+    // [FREE-MODE] Show UNLIMITED for usage credits too
+    bool is_unlimited = (s.user_info.credit_balance >= 999999);
+    if (is_unlimited) {
+        usg_credits_->setText("UNLIMITED");
+        usg_credits_->setStyleSheet(
+            QString("color:%1;font-size:24px;font-weight:700;background:transparent;%2")
+                .arg("#22c55e")
+                .arg(MF));
+    } else {
+        usg_credits_->setText(QString::number(s.user_info.credit_balance, 'f', 0));
+    }
+    
     usg_plan_->setText(s.account_type().toUpper());
     // /user/profile now returns the rate-limit window directly 鈥?show it
     // immediately instead of "鈥? while /user/usage is in flight.

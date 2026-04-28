@@ -203,33 +203,28 @@ void AuthManager::fetch_user_profile(std::function<void()> on_done) {
 // Used by login / verify_otp / verify_mfa / session restore.
 
 void AuthManager::complete_auth_flow(std::function<void()> on_done) {
-    UserApi::instance().get_user_subscription([this, on_done = std::move(on_done)](ApiResponse r) {
-        if (r.success) {
-            const auto sub_data = unwrap_data(r.data);
-            session_.subscription = UserSubscription::from_json(sub_data);
-            session_.has_subscription = !session_.subscription.account_type.isEmpty();
-        }
-        // Fallback: promote profile account_type into subscription so account_type() is consistent
-        if (session_.subscription.account_type.isEmpty() && !session_.user_info.account_type.isEmpty()) {
-            session_.subscription.account_type = session_.user_info.account_type;
-            session_.subscription.credit_balance = session_.user_info.credit_balance;
-            session_.has_subscription = true;
-        }
-        // Sync user_info from subscription so legacy readers stay consistent
-        if (!session_.subscription.account_type.isEmpty())
-            session_.user_info.account_type = session_.subscription.account_type;
-        if (session_.subscription.credit_balance > 0)
-            session_.user_info.credit_balance = session_.subscription.credit_balance;
-
-        if (!session_.api_key.isEmpty())
-            session_.authenticated = true;
-        save_session();
-        auto_configure_fincept_llm();
-        set_loading(false);
-        if (on_done)
-            on_done();
-        emit auth_state_changed();
-    });
+    // [FREE-MODE-STUB] Skip subscription API call - unlock all features for free
+    // TODO: Restore when commercial licensing is needed
+    LOG_INFO("Auth", "[FREE-MODE] Skipping subscription fetch - all features unlocked");
+    
+    // Set default free-mode values
+    session_.subscription.account_type = "free";
+    session_.subscription.credit_balance = 999999;  // Unlimited credits in free mode
+    session_.subscription.support_type = "community";
+    session_.has_subscription = true;
+    
+    // Sync to user_info
+    session_.user_info.account_type = "free";
+    session_.user_info.credit_balance = 999999;
+    
+    if (!session_.api_key.isEmpty())
+        session_.authenticated = true;
+    save_session();
+    auto_configure_fincept_llm();
+    set_loading(false);
+    if (on_done)
+        on_done();
+    emit auth_state_changed();
 }
 
 void AuthManager::fetch_user_subscription(std::function<void()> on_done) {

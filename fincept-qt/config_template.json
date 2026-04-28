@@ -1,0 +1,166 @@
+# Fincept Terminal Configuration Template
+# [FREE-MODE] All features unlocked - no subscription required!
+# 
+# Copy this file to ~/.fincept/config.json and customize as needed.
+# Most settings have sensible defaults and work out of the box.
+
+{
+  "version": "4.0.0",
+  "last_updated": "2026-04-20",
+  
+  "free_mode": {
+    "enabled": true,
+    "unlimited_credits": true,
+    "credit_balance": 999999,
+    "note": "All premium features are unlocked in FREE MODE"
+  },
+  
+  "data_sources": {
+    "market_data": {
+      "primary": "yahoo_finance",
+      "fallback": "akshare",
+      "cache_enabled": true,
+      "cache_ttl_hours": 1,
+      "rate_limit_rpm": 60
+    },
+    
+    "macro_data": {
+      "sources": [
+        "fred",
+        "world_bank",
+        "imf",
+        "oecd",
+        "ecb",
+        "bis",
+        "akshare"
+      ],
+      "preferred": "auto",
+      "cache_enabled": true,
+      "cache_ttl_hours": 24
+    },
+    
+    "sentinel_hub": {
+      "enabled": false,
+      "client_id": "",
+      "client_secret": "",
+      "instance_id": "",
+      "note": "[STUB] Optional - requires commercial subscription"
+    }
+  },
+  
+  "ai_configuration": {
+    "provider": "ollama",
+    "model": "llama3.2",
+    "endpoint": "http://localhost:11434",
+    "temperature": 0.7,
+    "max_tokens": 2048,
+    "timeout_seconds": 30,
+    
+    "alternatives": {
+      "deepseek": {
+        "endpoint": "https://api.deepseek.com/v1",
+        "api_key_env": "DEEPSEEK_API_KEY"
+      },
+      "groq": {
+        "endpoint": "https://api.groq.com/openai/v1",
+        "api_key_env": "GROQ_API_KEY",
+        "model": "llama3-70b-8192"
+      }
+    }
+  },
+  
+  "reddit_sentiment": {
+    "enabled": false,
+    "client_id": "",
+    "client_secret": "",
+    "user_agent": "FinceptTerminal/1.0 by /u/YOUR_USERNAME",
+    "subreddits": [
+      "wallstreetbets",
+      "stocks",
+      "investing",
+      "SecurityAnalysis",
+      "StockMarket",
+      "pennystocks",
+      "options",
+      "cryptocurrency"
+    ],
+    "max_posts_per_symbol": 50,
+    "note": "[STUB] Requires Reddit API credentials"
+  },
+  
+  "rate_limiting": {
+    "enabled": true,
+    "global_limiter": true,
+    "per_source_limits": {
+      "yahoo_finance": {"rpm": 60, "rph": 2000},
+      "fred": {"rpm": 120, "rph": 10000},
+      "world_bank": {"rpm": 60, "rph": 5000},
+      "imf": {"rpm": 30, "rph": 2000},
+      "oecd": {"rpm": 60, "rph": 5000},
+      "akshare": {"rpm": 30, "rph": 1000},
+      "ecb": {"rpm": 60, "rph": 5000},
+      "bis": {"rpm": 30, "rph": 2000},
+      "reddit": {"rpm": 60, "rph": 1000},
+      "coingecko": {"rpm": 50, "rph": 3000}
+    }
+  },
+  
+  "performance": {
+    "data_caching": {
+      "enabled": true,
+      "max_cache_size_mb": 500,
+      "cleanup_interval_hours": 24
+    },
+    
+    "ui_refresh": {
+      "market_data_interval_seconds": 60,
+      "news_feed_interval_seconds": 300,
+      "portfolio_update_interval_seconds": 120
+    },
+    
+    "python_scripts": {
+      "timeout_seconds": 30,
+      "max_memory_mb": 1024,
+      "concurrent_scripts": 3
+    }
+  },
+  
+  "privacy": {
+    "telemetry_enabled": false,
+    "error_reporting": true,
+    "usage_analytics": false,
+    "data_retention_days": 30,
+    "note": "All data stays local in FREE MODE"
+  },
+  
+  "proxy": {
+    "enabled": false,
+    "http_proxy": "http://127.0.0.1:12334",
+    "https_proxy": "http://127.0.0.1:12334",
+    "bypass_local": true
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "file_logging": true,
+    "log_directory": "~/.fincept/logs",
+    "max_log_files": 10,
+    "max_log_size_mb": 50,
+    "console_output": true
+  },
+  
+  "notifications": {
+    "price_alerts": true,
+    "news_alerts": false,
+    "system_updates": true,
+    "sound_enabled": false
+  },
+  
+  "display": {
+    "theme": "dark",
+    "font_family": "Consolas",
+    "font_size": 12,
+    "language": "en",
+    "timezone": "auto"
+  }
+}

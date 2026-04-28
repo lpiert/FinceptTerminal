@@ -521,4 +521,4 @@ void DocsScreen::retranslateUi() {
     }
 }
 
-} // namespace fincept::screens
+} // namespace fincept::screens

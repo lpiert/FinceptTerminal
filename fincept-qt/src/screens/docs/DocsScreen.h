@@ -81,6 +81,9 @@ class DocsScreen : public QWidget {
     QWidget* page_economics();
     QWidget* page_akshare();
     QWidget* page_gov_data();
+    
+    // [FREE-MODE] Free Mode Documentation
+    QWidget* page_free_mode();
 
     // Geopolitics & Alt
     QWidget* page_geopolitics();

@@ -211,7 +211,7 @@ void PolymarketScreen::on_interval_changed(const QString& interval) {
 }
 
 void PolymarketScreen::on_outcome_changed(int index) {
-    if (!has_selection_ || index >= selected_market_.clob_token_ids.size())
+    if (!has_selection_ || index < 0 || index >= selected_market_.clob_token_ids.size())
         return;
     PolymarketService::instance().fetch_price_history(selected_market_.clob_token_ids[index], "1d", 5);
 }

@@ -145,4 +145,4 @@ void FinceptMacroPanel::retranslateUi() {
     EconPanelBase::retranslateUi();
 }
 
-} // namespace fincept::screens
+} // namespace fincept::screens

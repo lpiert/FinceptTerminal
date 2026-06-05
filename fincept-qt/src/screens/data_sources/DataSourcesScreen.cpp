@@ -62,8 +62,7 @@ static const QStringList kCategoryLabels = {
     "All Connectors", "Databases",   "APIs",   "Files",      "Streaming",        "Cloud",
     "Time Series",    "Market Data", "Search", "Warehouses", "Alternative Data", "Open Banking"};
 
-    gainers_btn_ = new QPushButton(QString(QChar(0x25B2)) + " " + tr("GAINERS"));
-    losers_btn_ = new QPushButton(QString(QChar(0x25BC)) + " " + tr("LOSERS"));} // anonymous namespace
+} // anonymous namespace
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -117,8 +116,7 @@ bool DataSourcesScreen::eventFilter(QObject* obj, QEvent* event) {
 // setup_ui — assembles the complete screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-    gainers_btn_ = new QPushButton(QString(QChar(0x25B2)) + " " + tr("GAINERS"));
-    losers_btn_ = new QPushButton(QString(QChar(0x25BC)) + " " + tr("LOSERS"));
+
 void DataSourcesScreen::refresh_connections() {
     const auto result = DataSourceRepository::instance().list_all();
     connections_cache_ = result.is_ok() ? result.value() : QVector<DataSource>{};

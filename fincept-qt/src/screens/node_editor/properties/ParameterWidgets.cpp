@@ -233,7 +233,8 @@ QWidget* ParameterWidgetFactory::create(const ParamDef& param, const QJsonValue&
                          [populate, dialog_filter, key, on_change, import_btn]() {
                              QString path = QFileDialog::getOpenFileName(
                                  import_btn->window(), QCoreApplication::translate("ParameterWidgetFactory", "Import File"),
-                                 QString(), dialog_filter);                             if (path.isEmpty())
+                                 QString(), dialog_filter);
+                             if (path.isEmpty())
                                  return;
 
                              QString file_id =
@@ -343,8 +344,8 @@ QWidget* ParameterWidgetFactory::create(const ParamDef& param, const QJsonValue&
         auto res = fincept::LlmProfileRepository::instance().list_profiles();
         if (res.is_ok()) {
             for (const auto& p : res.value()) {
-                QString label = p.name + "  [" + p.provider + " / " + p.model_id + "]";
-                combo->addItem(label, p.id);
+                QString display = p.name + "  [" + p.provider + " / " + p.model_id + "]";
+                combo->addItem(display, p.id);
                 if (p.id == saved)
                     combo->setCurrentIndex(combo->count() - 1);
             }

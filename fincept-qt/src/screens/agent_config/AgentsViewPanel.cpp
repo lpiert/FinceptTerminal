@@ -97,7 +97,8 @@ QWidget* AgentsViewPanel::build_agent_list_panel() {
                                              "font-size:10px;font-weight:600;letter-spacing:1px;}"
                                              "QPushButton:hover{background:%3;}")
                                          .arg(ui::colors::BG_RAISED(), ui::colors::AMBER(), ui::colors::AMBER_DIM()));
-    connect(list_refresh_btn_, &QPushButton::clicked, this, []() {        services::AgentService::instance().clear_cache();
+    connect(list_refresh_btn_, &QPushButton::clicked, this, []() {
+        services::AgentService::instance().clear_cache();
         services::AgentService::instance().discover_agents();
     });
     vl->addWidget(list_refresh_btn_);

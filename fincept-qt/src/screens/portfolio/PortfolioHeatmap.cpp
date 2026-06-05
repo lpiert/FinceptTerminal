@@ -32,7 +32,7 @@ void PortfolioHeatmap::build_ui() {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // Unified panel header 鈥?HOLDINGS title + 3 mode buttons in the controls slot.
+    // Unified panel header — HOLDINGS title + 3 mode buttons in the controls slot.
     auto header = make_panel_header(tr("HOLDINGS"), this);
     title_label_ = header.title_label;
 
@@ -71,7 +71,7 @@ void PortfolioHeatmap::build_ui() {
 
     layout->addWidget(header.header);
 
-    // 鈹€鈹€ Content area below the header 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Content area below the header ────────────────────────────────────────
     auto* body = new QWidget(this);
     body->setStyleSheet("background:transparent;");
     auto* body_layout_outer = new QVBoxLayout(body);
@@ -97,12 +97,12 @@ void PortfolioHeatmap::build_ui() {
     scroll->setWidget(blocks_container_);
     layout->addWidget(scroll, 1);
 
-    // 鈹€鈹€ Top movers footer 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Top movers footer ────────────────────────────────────────────────────
     // The previous panel duplicated the StatsRibbon and the POSITIONS table:
-    //   - 8-row selected-holding inspector 鈫?already in POSITIONS row data
-    //   - RISK SCORE gauge                  鈫?already in StatsRibbon RISK chip
-    //   - HOLDINGS / CONC.TOP3 / VOL30      鈫?already in StatsRibbon
-    // All three were deleted. Top movers stays 鈥?it's not in the ribbon and
+    //   - 8-row selected-holding inspector → already in POSITIONS row data
+    //   - RISK SCORE gauge                  → already in StatsRibbon RISK chip
+    //   - HOLDINGS / CONC.TOP3 / VOL30      → already in StatsRibbon
+    // All three were deleted. Top movers stays — it's not in the ribbon and
     // is contextual to the heatmap (the visible blocks).
     auto* movers_sep = new QWidget(this);
     movers_sep->setFixedHeight(1);
@@ -133,7 +133,7 @@ void PortfolioHeatmap::set_holdings(const QVector<portfolio::HoldingWithQuote>& 
 
 void PortfolioHeatmap::set_metrics(const portfolio::ComputedMetrics& metrics) {
     metrics_ = metrics;
-    // Risk score / concentration / volatility are now in the StatsRibbon 鈥?
+    // Risk score / concentration / volatility are now in the StatsRibbon —
     // the heatmap no longer duplicates them. Keep the metrics_ field around
     // in case future heatmap modes want to colour blocks by risk score.
 }
@@ -164,28 +164,28 @@ QColor PortfolioHeatmap::block_color(const portfolio::HoldingWithQuote& h) const
     if (mode_ == portfolio::HeatmapMode::Weight) {
         // Amber: darker base, brighter at higher weights
         double t = std::min(val / 40.0, 1.0);
-        int r = static_cast<int>(100 + t * 117); // 100 鈫?217
-        int g = static_cast<int>(50 + t * 69);   // 50  鈫?119
+        int r = static_cast<int>(100 + t * 117); // 100 → 217
+        int g = static_cast<int>(50 + t * 69);   // 50  → 119
         int b = static_cast<int>(6);
         return QColor(r, g, b);
     }
 
     // Green/Red: solid colors, brightness scales with magnitude
-    double intensity = std::min(std::abs(val) / 20.0, 1.0); // saturates at 卤20%
+    double intensity = std::min(std::abs(val) / 20.0, 1.0); // saturates at ±20%
     if (val >= 0) {
-        // Dark green 鈫?bright green
-        int g = static_cast<int>(80 + intensity * 123); // 80 鈫?203
+        // Dark green → bright green
+        int g = static_cast<int>(80 + intensity * 123); // 80 → 203
         int r = static_cast<int>(intensity * 22);
         return QColor(r, g, static_cast<int>(intensity * 30));
     } else {
-        // Dark red 鈫?bright red
-        int r = static_cast<int>(100 + intensity * 120); // 100 鈫?220
+        // Dark red → bright red
+        int r = static_cast<int>(100 + intensity * 120); // 100 → 220
         return QColor(r, static_cast<int>(intensity * 20), static_cast<int>(intensity * 20));
     }
 }
 
 void PortfolioHeatmap::rebuild_blocks() {
-    // Clear existing blocks 鈥?delete children first, then layout
+    // Clear existing blocks — delete children first, then layout
     if (auto* old_layout = blocks_container_->layout()) {
         QLayoutItem* item;
         while ((item = old_layout->takeAt(0)) != nullptr) {
@@ -287,7 +287,7 @@ void PortfolioHeatmap::retranslateUi() {
     if (weight_btn_)     weight_btn_->setText(tr("WT"));
     if (day_btn_)        day_btn_->setText(tr("DAY"));
     if (movers_header_)  movers_header_->setText(tr("TOP MOVERS"));
-    // Block text is "SYMBOL\n+x.xx%" 鈥?pure data, no tr() needed.
+    // Block text is "SYMBOL\n+x.xx%" — pure data, no tr() needed.
     // top_gainer_/top_loser_ contents likewise are formatted from data; no
     // change on language switch.
 }

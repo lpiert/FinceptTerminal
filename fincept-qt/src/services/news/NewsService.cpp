@@ -1,4 +1,4 @@
-// src/services/news/NewsService.cpp
+﻿// src/services/news/NewsService.cpp
 //
 // Core lifecycle: singleton + cache + fetch_all_news (cached/eager) +
 // fetch_all_news_progressive (streaming) + analyze_article + summarize_headlines
@@ -538,20 +538,7 @@ void NewsService::stop_auto_refresh() {
     refresh_timer_->stop();
 }
 
-    // ── Display-name cache (symbol → human-readable name) ──
-    // Persisted to SettingsRepository so resolution survives restarts and the
-    // per-symbol yfinance .info cost is paid at most once.
-    void load_name_cache();
-    void persist_name_cache();
-    QHash<QString, QString> name_cache_;
-    QHash<QString, QString> currency_cache_;  // symbol → ISO currency code (e.g. "USD")
-    bool name_cache_loaded_ = false;
-
-    // ── Batching ──
-    struct PendingRequest {
-        QStringList symbols;
-        QuoteCallback cb;
-    };QStringList NewsService::topic_patterns() const {
+QStringList NewsService::topic_patterns() const {
     return {QStringLiteral("news:general"),
             QStringLiteral("news:symbol:*"),
             QStringLiteral("news:category:*"),

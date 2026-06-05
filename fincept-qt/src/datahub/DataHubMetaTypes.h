@@ -28,7 +28,8 @@
 #include "services/options/OptionChainTypes.h"          // OptionChain, OptionChainRow, Strategy, …
 #include "services/polymarket/PolymarketTypes.h"        // OrderBook
 #include "services/prediction/PredictionTypes.h"        // PredictionOrderBook, PredictionMarket, …
-#include "services/wallet/WalletTypes.h"               // WalletBalance, TokenHolding, TokenPrice (=FncptPrice), TokenMetadata#include "trading/TradingTypes.h"                       // TickerData, OrderBookData, Candle, TradeData, Broker*
+#include "services/wallet/WalletTypes.h"               // WalletBalance, TokenHolding, TokenPrice (=FncptPrice), TokenMetadata
+#include "trading/TradingTypes.h"                       // TickerData, OrderBookData, Candle, TradeData, Broker*
 
 #include <QMetaType>
 

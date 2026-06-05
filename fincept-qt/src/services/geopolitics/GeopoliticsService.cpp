@@ -177,7 +177,8 @@ void GeopoliticsService::fetch_events(const QString& country, const QString& cit
             emit self->events_loaded(page_data);
             if (self->hub_registered_)
                 publish_to_hub(QStringLiteral("geopolitics:events"), QVariant::fromValue(page_data));
-        });}
+        });
+}
 
 void GeopoliticsService::fetch_unique_countries() {
     // Cache hit — deserialize and emit, otherwise go to network.
@@ -279,18 +280,21 @@ void GeopoliticsService::fetch_unique_categories() {
 
 void GeopoliticsService::fetch_unique_cities() {
     QPointer<GeopoliticsService> self = this;
-    HttpClient::instance().get(geo_api_base() + "?get_unique_cities=true", [self](Result<QJsonDocument> result) {        if (!self)
+    HttpClient::instance().get(geo_api_base() + "?get_unique_cities=true", [self](Result<QJsonDocument> result) {
+        if (!self)
             return;
         if (!result.is_ok()) {
             emit self->error_occurred("cities", QString::fromStdString(result.error()));
             return;
         }
-        auto arr = result.value().array();
+        // Response: {success, message, data: {unique_cities: [{city, country}, ...]}}
+        auto root = result.value().object();
+        auto data = root.contains("data") ? root["data"].toObject() : root;
+        auto arr = data["unique_cities"].toArray();
         QStringList cities;
         cities.reserve(arr.size());
         for (const auto& v : arr) {
-            auto o = v.toObject();
-            auto city = o["city"].toString();
+            const auto city = v.toObject()["city"].toString();
             if (!city.isEmpty())
                 cities.append(city);
         }
@@ -344,8 +348,6 @@ static QVector<HDXDataset> parse_hdx_results(const QString& output) {
     }
     return datasets;
 }
-
-static inline void publish_hdx(GeopoliticsService* self, const QString& context, const QVector<HDXDataset>& datasets);
 
 void GeopoliticsService::search_hdx_conflicts() {
     run_python("hdx_data.py", {"search_conflict", "", "20"}, "hdx_conflicts", [this](bool ok, const QString& out) {

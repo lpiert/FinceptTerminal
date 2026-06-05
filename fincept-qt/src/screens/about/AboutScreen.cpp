@@ -51,10 +51,6 @@ static QString PANEL() {
         .arg(ui::colors::BG_SURFACE(), ui::colors::BORDER_DIM());
 }
 
-static QString PANEL_HEADER() {
-    return QString("background: %1; border-bottom: 1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM());
-}
-
 static QString LINK_BTN() {
     return QString("QPushButton { background: %1; color: %2; border: 1px solid %3; "
                    "border-radius: 2px; padding: 8px 12px; font-size: 12px; text-align: left; "
@@ -96,7 +92,8 @@ static void setPanelHeaderText(QLabel* lbl, const QString& icon, const QString& 
 
 // Re-apply bullet text (mirrors makeBullet's "■  %1" format).
 static void setBulletText(QLabel* lbl, const QString& text) {
-    if (lbl) lbl->setText(QString("■  %1").arg(text));}
+    if (lbl) lbl->setText(QString("■  %1").arg(text));
+}
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 

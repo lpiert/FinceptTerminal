@@ -33,7 +33,8 @@ NotifPanel::NotifPanel(QWidget* parent) : QFrame(parent, Qt::Popup | Qt::Framele
     hl->setContentsMargins(12, 0, 8, 0);
 
     title_lbl_ = new QLabel(tr("NOTIFICATIONS"));
-    title_lbl_->setStyleSheet(        QString("color: %1; font-size: 11px; font-weight: bold; background: transparent;").arg(ui::colors::AMBER()));
+    title_lbl_->setStyleSheet(
+        QString("color: %1; font-size: 11px; font-weight: bold; background: transparent;").arg(ui::colors::AMBER()));
     hl->addWidget(title_lbl_);
     hl->addStretch();
 

@@ -46,7 +46,7 @@ using namespace fincept::ui;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // CodeTextEdit — editor with keyboard shortcuts
-    auto future = mcp::McpProvider::instance().call_tool_async(local_name, arguments);
+
 CodeEditorScreen::CodeEditorScreen(QWidget* parent) : QWidget(parent) {
     build_ui();
     on_new_notebook();

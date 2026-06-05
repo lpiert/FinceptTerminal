@@ -935,7 +935,7 @@ set(TRADING_SOURCES
     src/trading/ExchangeSession.cpp
     src/trading/ExchangeSessionManager.cpp
     src/trading/ExchangeDaemonPool.cpp
-    # Hyperliquid (Alpha Arena live mode — Phase 5c partial)
+
     src/trading/exchanges/hyperliquid/HyperliquidClient.cpp
     src/trading/exchanges/hyperliquid/Keccak256.cpp
     src/trading/exchanges/hyperliquid/HyperliquidSigner.cpp
@@ -1177,18 +1177,17 @@ set(SERVICE_SOURCES
     src/services/polymarket/PolymarketService.cpp
     src/services/polymarket/PolymarketWebSocket.cpp
 
-    # Prediction Markets — exchange-agnostic abstraction (Polymarket, Kalshi, …)
-    src/services/prediction/PredictionExchangeAdapter.cpp
-    src/services/prediction/PredictionExchangeRegistry.cpp
-    src/services/prediction/PredictionCredentialStore.cpp
-    src/services/prediction/polymarket/PolymarketTypeMap.cpp
-    src/services/prediction/polymarket/PolymarketAdapter.cpp
-    src/services/prediction/kalshi/KalshiRestClient.cpp
-    src/services/prediction/kalshi/KalshiWsClient.cpp
-    src/services/prediction/kalshi/KalshiAdapter.cpp
     # Phase 4 — Fincept Internal prediction-market adapter (demo mode until
     # `fincept.markets_endpoint` is configured and `fincept_market` lands).
     src/services/prediction/fincept_internal/FinceptInternalAdapter.cpp
+    src/services/prediction/PredictionCredentialStore.cpp
+    src/services/prediction/PredictionExchangeAdapter.cpp
+    src/services/prediction/PredictionExchangeRegistry.cpp
+    src/services/prediction/polymarket/PolymarketTypeMap.cpp
+    src/services/prediction/polymarket/PolymarketAdapter.cpp
+    src/services/prediction/kalshi/KalshiAdapter.cpp
+    src/services/prediction/kalshi/KalshiRestClient.cpp
+    src/services/prediction/kalshi/KalshiWsClient.cpp
     # Speech-to-text service (Python speech_recognition + Google API)
     src/services/stt/SpeechService.cpp
 
@@ -1238,7 +1237,6 @@ set(UI_SOURCES
     src/ui/widgets/WorldMapWidget.cpp
     src/ui/widgets/LoadingOverlay.cpp
     src/ui/widgets/ConfettiOverlay.cpp
-    src/ui/widgets/SpeedSparkline.cpp
     src/ui/widgets/LanguageSwitcher.cpp    src/ui/tables/DataTable.cpp
     src/ui/charts/ChartFactory.cpp
     src/ui/charts/ChartIndicators.cpp
@@ -1280,6 +1278,7 @@ set(UI_SOURCES
     src/ui/widgets/NotifToast.cpp
     src/ui/widgets/NotifBell.cpp
     src/ui/widgets/NotifPanel.cpp
+    src/ui/widgets/SpeedSparkline.cpp
 
     # Algo Trading visual strategy builder widgets
     src/ui/widgets/algo/ConditionBlock.cpp
@@ -1318,7 +1317,8 @@ set(SCREEN_SOURCES
     src/screens/settings/KeybindingsSection.cpp
     src/screens/settings/PythonEnvSection.cpp
     src/screens/settings/DeveloperSection.cpp
-    src/screens/settings/VoiceConfigSection.cpp    src/screens/about/AboutScreen.cpp
+    src/screens/settings/VoiceConfigSection.cpp
+    src/screens/about/AboutScreen.cpp
     src/screens/support/SupportScreen.cpp
     src/screens/support/SupportScreen_Layout.cpp
     src/screens/support/SupportScreen_Actions.cpp
@@ -1654,6 +1654,9 @@ set(SCREEN_SOURCES
     src/screens/polymarket/PolymarketLeaderboard.cpp
     src/screens/polymarket/PolymarketActivityFeed.cpp
     src/screens/polymarket/PolymarketStatusBar.cpp
+    src/screens/polymarket/ExchangePresentation.cpp
+    src/screens/polymarket/PredictionAccountDialog.cpp
+    src/screens/polymarket/PolymarketOrderBlotter.cpp
 
     # Alpha Arena
     src/screens/alpha_arena/AlphaArenaScreen.cpp
@@ -2248,6 +2251,12 @@ set_source_files_properties(
     src/storage/sqlite/migrations/v036_instrument_broker_token.cpp
     src/storage/sqlite/migrations/v037_cloud_sync.cpp
     src/storage/sqlite/migrations/v038_notebooks.cpp
+    # CommandBar partial-class split — each file adds methods to fincept::ui::CommandBar;
+    # combining them in a single TU causes redefinition errors.
+    src/ui/navigation/CommandBar.cpp
+    src/ui/navigation/CommandBar_Input.cpp
+    src/ui/navigation/CommandBar_Suggestions.cpp
+    src/ui/navigation/CommandBar_Assets.cpp
     # Polymarket screen files — each defines static fmt_* helpers in same namespace
     src/screens/polymarket/PolymarketScreen.cpp
     src/screens/polymarket/PolymarketCommandBar.cpp
@@ -2259,8 +2268,6 @@ set_source_files_properties(
     src/screens/polymarket/PolymarketLeaderboard.cpp
     src/screens/polymarket/PolymarketActivityFeed.cpp
     src/screens/polymarket/PolymarketStatusBar.cpp
-    src/screens/polymarket/PredictionAccountDialog.cpp
-    src/screens/polymarket/PolymarketOrderBlotter.cpp
     src/screens/chat_mode/ChatAgentPanel.cpp
     src/screens/chat_mode/ChatModeScreen.cpp
     src/screens/chat_mode/ChatModeService.cpp

@@ -440,7 +440,7 @@ void TradeAnalysisPanel::build_ui() {
     root->addWidget(scroll, 1);
 }
 
-void TradeAnalysisPanel::display_result(const QJsonObject& data) {
+void TradeAnalysisPanel::display_result(const QJsonObject& payload) {
     while (results_layout_->count() > 0) {
         auto* item = results_layout_->takeAt(0);
         if (item->widget())
@@ -483,7 +483,7 @@ void TradeAnalysisPanel::display_result(const QJsonObject& data) {
             }
         }
     };
-    flatten(data, "");
+    flatten(payload, "");
 
     auto* table = new QTableWidget(rows.size(), 2);
     table->setHorizontalHeaderLabels({tr("Metric"), tr("Value")});
@@ -518,9 +518,9 @@ void TradeAnalysisPanel::display_result(const QJsonObject& data) {
     status_label_->setText(tr("%1 fields").arg(rows.size()));
 }
 
-void TradeAnalysisPanel::on_trade_result(const QString& context, const QJsonObject& data) {
+void TradeAnalysisPanel::on_trade_result(const QString& context, const QJsonObject& payload) {
     if (context == "trade_benefits" || context == "trade_restrictions")
-        display_result(data);
+        display_result(payload);
 }
 
 void TradeAnalysisPanel::on_error(const QString& context, const QString& message) {

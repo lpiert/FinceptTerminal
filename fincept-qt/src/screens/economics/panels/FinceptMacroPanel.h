@@ -23,9 +23,11 @@ class FinceptMacroPanel : public EconPanelBase {
     void changeEvent(QEvent* event) override;
 
   private:
+    void display_macro_data(const QJsonObject& data);
     void retranslateUi() override;
 
     // Cached for retranslateUi
-    QLabel* coming_soon_lbl_ = nullptr;};
+    QLabel* coming_soon_lbl_ = nullptr;
+    QString selected_country_ = "US";};
 
 } // namespace fincept::screens

@@ -749,7 +749,8 @@ void DerivativesScreen::on_instrument_changed(int index) {
     }
 
     const QStringList names = {tr("BONDS"), tr("EQUITY OPTIONS"), tr("FX OPTIONS"), tr("IR SWAPS"), tr("CREDIT")};
-    status_instrument_->setText(tr("INSTRUMENT: %1").arg(names[index]));    LOG_INFO("Derivatives", "Switched to: " + names[index]);
+    status_instrument_->setText(tr("INSTRUMENT: %1").arg(names[index]));
+    LOG_INFO("Derivatives", "Switched to: " + names[index]);
 
     fincept::ScreenStateManager::instance().notify_changed(this);
 }

@@ -240,7 +240,7 @@ void EquityFinancialsTab::rebuild_views() {
 
 // ── Build UI ──────────────────────────────────────────────────────────────────
 
-    auto section_header = [](const QString& text, QLabel*& out) {
+
 void EquityFinancialsTab::populate_table(QTableWidget* table, const QVector<QPair<QString, QJsonObject>>& stmt) {
 
     if (!table || stmt.isEmpty())

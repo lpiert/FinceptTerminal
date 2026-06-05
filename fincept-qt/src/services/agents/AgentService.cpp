@@ -426,8 +426,7 @@ void AgentService::run_python_stdin(const QString& action, const QJsonObject& pa
 
 // ── Agent discovery ──────────────────────────────────────────────────────────
 
-    table_->set_headers({tr("SYMBOL"), tr("NAME"), tr("PRICE"), tr("CHANGE"),
-                         tr("CHG %"), tr("HIGH"), tr("LOW"), tr("VOLUME")});
+
 QString AgentService::make_cache_key(const QString& action, const QJsonObject& params) const {
     return action + "|" + QString::fromUtf8(QJsonDocument(params).toJson(QJsonDocument::Compact));
 }

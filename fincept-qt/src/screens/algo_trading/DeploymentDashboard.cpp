@@ -444,7 +444,8 @@ void DeploymentDashboard::build_ui() {
     refresh_btn_ = new QPushButton(tr("REFRESH"), content);
     refresh_btn_->setCursor(Qt::PointingHandCursor);
     refresh_btn_->setFixedHeight(30);
-    refresh_btn_->setStyleSheet(        QString("QPushButton { background: %1; color: %2; border: 1px solid %3;"
+    refresh_btn_->setStyleSheet(
+        QString("QPushButton { background: %1; color: %2; border: 1px solid %3;"
                 " font-size: %4px; font-weight: 700; %5 padding: 4px 16px; }"
                 "QPushButton:hover { background: %6; color: %7; }")
             .arg(fincept::ui::colors::BG_RAISED(), fincept::ui::colors::TEXT_SECONDARY(), fincept::ui::colors::BORDER_DIM())

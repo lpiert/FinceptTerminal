@@ -4,8 +4,8 @@
 #include <QEvent>
 #include <QString>
 
-class QLineEdit;
-class QListWidget;
+#include <QLineEdit>
+#include <QListWidget>
 
 namespace fincept::ui {
 

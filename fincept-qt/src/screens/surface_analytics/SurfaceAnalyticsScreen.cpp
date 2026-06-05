@@ -63,13 +63,15 @@ float SurfaceAnalyticsScreen::spot_for(const QString& sym) const {
         if (v.canConvert<fincept::services::QuoteData>()) {
             auto q = v.value<fincept::services::QuoteData>();
             if (q.price > 0.0)
-                return (float)q.price;        }
+                return (float)q.price;
+        }
         bool ok = false;
         double d = v.toDouble(&ok);
         if (ok && d > 0.0)
             return (float)d;
     }
-    return 100.0f;}
+    return 100.0f;
+}
 
 
 void SurfaceAnalyticsScreen::refresh_provider_status() {
@@ -97,7 +99,8 @@ void SurfaceAnalyticsScreen::load_dataset_range_for_active_capability() {
         if (!self || !self->control_panel_)
             return;
         self->control_panel_->apply_dataset_range(r.start, r.end);
-    });}
+    });
+}
 
 // ── Show/hide event — P3 compliance ──────────────────────────────────────────
 void SurfaceAnalyticsScreen::showEvent(QShowEvent* e) {

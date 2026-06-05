@@ -439,25 +439,7 @@ QMenu* ToolBar::build_navigate_menu() {
 
     m->addSeparator();
 
-    auto* trd = add_sub(tr("Trading & Portfolio"));
-    nav(trd, tr("Equity Trading"), "equity_trading");
-    nav(trd, tr("Alpha Arena"), "alpha_arena");
-    nav(trd, tr("Prediction Markets"), "polymarket");
-    nav(trd, tr("Derivatives"), "derivatives");
-    nav(trd, tr("F&&O"), "fno");
-    nav(trd, tr("Watchlist"), "watchlist");
-
-    auto* crypto = add_sub(tr("Crypto"));
-    nav(crypto, tr("Crypto Center"), "crypto_center");
-
-    auto* res = add_sub(tr("Research & Intelligence"));
-    nav(res, tr("Equity Research"), "equity_research");
-    nav(res, tr("M&A Analytics"), "ma_analytics");
-    nav(res, tr("Alt. Investments"), "alt_investments");
-    nav(res, tr("Geopolitics"), "geopolitics");
-    nav(res, tr("Maritime"), "maritime");
-    nav(res, tr("Surface Analytics"), "surface_analytics");
-    nav(m, tr("Forum"), "forum");
+    nav(m, tr("Forum"), "forum");
     nav(m, tr("Docs"), "docs");
     nav(m, tr("Support"), "support");
     nav(m, tr("About"), "about");
@@ -478,7 +460,8 @@ QMenu* ToolBar::build_view_menu() {
     m->addAction(tr("Always on Top\tCtrl+Shift+T"), this,
                  [this]() { emit action_triggered("always_on_top"); });
     m->addSeparator();
-    auto* panels = m->addMenu(tr("Float Panel"));
+
+    auto* panels = m->addMenu(tr("Float Panel"));
     panels->setStyleSheet(popup_ss());
     panels->addAction(tr("Dashboard"), this, [this]() { emit action_triggered("panel_dashboard"); });
     panels->addAction(tr("Watchlist"), this, [this]() { emit action_triggered("panel_watchlist"); });
@@ -496,70 +479,41 @@ QMenu* ToolBar::build_view_menu() {
     panels->addAction(tr("AI Chat"), this, [this]() { emit action_triggered("panel_ai_chat"); });
     m->addSeparator();
 
-    m->addAction(tr("Component Browser\tCtrl+K"), this,
-                 [this]() { emit action_triggered("browse_components"); });
-    m->addSeparator();
-    m->addAction(tr("Fullscreen\tF11"), this, [this]() { emit action_triggered("fullscreen"); });
-    m->addSeparator();
-    m->addAction(tr("Focus Mode\tF10"), this, [this]() { emit action_triggered("focus_mode"); });
-    // Not checkable — state lives on WindowFrame::always_on_top_; a checkable QAction would drift on focus changes.
-    m->addAction(tr("Always on Top\tCtrl+Shift+T"), this,
-                 [this]() { emit action_triggered("always_on_top"); });
-    m->addSeparator();
-    auto* persp = m->addMenu(tr("Quick Switch"));
+    auto* persp = m->addMenu(tr("Quick Switch"));
     persp->setStyleSheet(popup_ss());
     persp->addAction(tr("Save Workspace"), this, [this]() { emit action_triggered("perspective_save"); });
     persp->addSeparator();
 
-    m->addAction(tr("Component Browser\tCtrl+K"), this,
-                 [this]() { emit action_triggered("browse_components"); });
-    m->addSeparator();
-    m->addAction(tr("Fullscreen\tF11"), this, [this]() { emit action_triggered("fullscreen"); });
-    m->addSeparator();
-    m->addAction(tr("Focus Mode\tF10"), this, [this]() { emit action_triggered("focus_mode"); });
-    // Not checkable — state lives on WindowFrame::always_on_top_; a checkable QAction would drift on focus changes.
-    m->addAction(tr("Always on Top\tCtrl+Shift+T"), this,
-                 [this]() { emit action_triggered("always_on_top"); });
-    m->addSeparator();
-    auto* qs_trading = persp->addMenu(tr("Trading"));
+    auto* qs_trading = persp->addMenu(tr("Trading"));
     qs_trading->setStyleSheet(popup_ss());
     qs_trading->addAction(tr("Crypto Trading"), this, [this]() { emit action_triggered("perspective_trading"); });
     qs_trading->addAction(tr("Equity Trading"), this, [this]() { emit action_triggered("perspective_equity"); });
     qs_trading->addAction(tr("Algo Trading"), this, [this]() { emit action_triggered("perspective_algo"); });
 
-    m->addAction(tr("Component Browser\tCtrl+K"), this,
-                 [this]() { emit action_triggered("browse_components"); });
-    m->addSeparator();
-    m->addAction(tr("Fullscreen\tF11"), this, [this]() { emit action_triggered("fullscreen"); });
-    m->addSeparator();
-    m->addAction(tr("Focus Mode\tF10"), this, [this]() { emit action_triggered("focus_mode"); });
-    // Not checkable — state lives on WindowFrame::always_on_top_; a checkable QAction would drift on focus changes.
-    m->addAction(tr("Always on Top\tCtrl+Shift+T"), this,
-                 [this]() { emit action_triggered("always_on_top"); });
-    m->addSeparator();
-    auto* qs_research = persp->addMenu(tr("Research"));
+    auto* qs_research = persp->addMenu(tr("Research"));
     qs_research->setStyleSheet(popup_ss());
     qs_research->addAction(tr("Equity Research"), this, [this]() { emit action_triggered("perspective_research"); });
     qs_research->addAction(tr("Derivatives"), this, [this]() { emit action_triggered("perspective_derivatives"); });
     qs_research->addAction(tr("F&&O"), this, [this]() { emit action_triggered("perspective_fno"); });
     qs_research->addAction(tr("M&&A Analytics"), this, [this]() { emit action_triggered("perspective_ma"); });
-    persp->addAction(tr("Portfolio View"), this, [this]() { emit action_triggered("perspective_portfolio"); });
+
+    persp->addAction(tr("Portfolio View"), this, [this]() { emit action_triggered("perspective_portfolio"); });
     persp->addAction(tr("Markets View"), this, [this]() { emit action_triggered("perspective_markets"); });
     persp->addAction(tr("News View"), this, [this]() { emit action_triggered("perspective_news"); });
 
-    auto* qs_econ = persp->addMenu(tr("Economics && Data"));    qs_econ->setStyleSheet(popup_ss());
+    auto* qs_econ = persp->addMenu(tr("Economics && Data"));
+    qs_econ->setStyleSheet(popup_ss());
     qs_econ->addAction(tr("Economics"), this, [this]() { emit action_triggered("perspective_economics"); });
     qs_econ->addAction(tr("Data Sources"), this, [this]() { emit action_triggered("perspective_data"); });
 
     persp->addAction(tr("Geopolitics View"), this, [this]() { emit action_triggered("perspective_geopolitics"); });
 
-    auto* qs_ai = persp->addMenu(tr("AI && Quant"));    qs_ai->setStyleSheet(popup_ss());
+    auto* qs_ai = persp->addMenu(tr("AI && Quant"));
+    qs_ai->setStyleSheet(popup_ss());
     qs_ai->addAction(tr("Quant Lab"), this, [this]() { emit action_triggered("perspective_quant"); });
     qs_ai->addAction(tr("AI Chat"), this, [this]() { emit action_triggered("perspective_ai"); });
 
-    persp->addAction(tr("Geopolitics View"), this, [this]() { emit action_triggered("perspective_geopolitics"); });
-
-    auto* qs_ai = persp->addMenu(tr("AI && Quant"));    persp->addAction(tr("Tools View"), this, [this]() { emit action_triggered("perspective_tools"); });
+    persp->addAction(tr("Tools View"), this, [this]() { emit action_triggered("perspective_tools"); });
     m->addSeparator();
 
     m->addAction(tr("Refresh Screen\tF5"), this, [this]() { emit action_triggered("refresh"); });

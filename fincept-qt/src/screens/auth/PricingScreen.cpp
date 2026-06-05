@@ -57,19 +57,6 @@ void PricingScreen::build_ui() {
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(0);
 
-    // [FREE-MODE] Add banner at top indicating free mode is active
-    auto* free_banner = new QLabel("🎉 FREE MODE ACTIVE - All Features Unlocked");
-    free_banner->setAlignment(Qt::AlignCenter);
-    free_banner->setFixedHeight(32);
-    free_banner->setStyleSheet(
-        QString("QLabel { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                "stop:0 rgba(34,197,94,0.15), stop:1 rgba(16,185,129,0.15)); "
-                "color: #22c55e; border-bottom: 2px solid #22c55e; "
-                "font-size: 14px; font-weight: 700; padding: 0 20px; "
-                "font-family:'Consolas',monospace; }")
-    );
-    root->addWidget(free_banner);
-
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);

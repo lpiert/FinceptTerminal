@@ -364,7 +364,8 @@ QWidget* AsiaMarketsScreen::create_data_panel() {
     refresh_btn_->setObjectName("asiaRefreshBtn");
     refresh_btn_->setCursor(Qt::PointingHandCursor);
     refresh_btn_->setFixedWidth(65);
-    connect(refresh_btn_, &QPushButton::clicked, this, &AsiaMarketsScreen::on_execute);
+    connect(refresh_btn_, &QPushButton::clicked, this, &AsiaMarketsScreen::on_execute);
+
     tbl->addWidget(data_status_);
     tbl->addWidget(record_count_);
     tbl->addStretch(1);
@@ -699,16 +700,17 @@ void AsiaMarketsScreen::execute_query(const QString& endpoint, const QStringList
 
 void AsiaMarketsScreen::display_table(const QJsonArray& rows_json) {
     if (rows_json.isEmpty()) {
-        data_status_->setText(tr("No data returned"));        return;
+        data_status_->setText(tr("No data returned"));
+        return;
     }
 
     // Columns from first row
     QStringList columns;
-    auto first = data[0].toObject();
+    auto first = rows_json[0].toObject();
     for (auto it = first.begin(); it != first.end(); ++it)
         columns << it.key();
 
-    int max_rows = qMin(data.size(), 2000);
+    int max_rows = qMin(rows_json.size(), 2000);
 
     // Block all signals + updates during population
     data_table_->setSortingEnabled(false);
@@ -723,7 +725,7 @@ void AsiaMarketsScreen::display_table(const QJsonArray& rows_json) {
     const QColor col_neg(colors::NEGATIVE());
 
     for (int row = 0; row < max_rows; ++row) {
-        auto obj = data[row].toObject();
+        auto obj = rows_json[row].toObject();
         for (int col = 0; col < columns.size(); ++col) {
             auto val = obj.value(columns[col]);
             QString text;
@@ -753,10 +755,11 @@ void AsiaMarketsScreen::display_table(const QJsonArray& rows_json) {
     data_table_->setSortingEnabled(true);
 
     if (rows_json.size() > max_rows)
-        data_status_->setText(tr("Showing %1 of %2").arg(max_rows).arg(rows_json.size()));}
+        data_status_->setText(tr("Showing %1 of %2").arg(max_rows).arg(rows_json.size()));
+}
 
-void AsiaMarketsScreen::display_json(const QJsonArray& data) {
-    QJsonDocument doc(data);
+void AsiaMarketsScreen::display_json(const QJsonArray& rows_json) {
+    QJsonDocument doc(rows_json);
     json_view_->setPlainText(doc.toJson(QJsonDocument::Indented));
 }
 

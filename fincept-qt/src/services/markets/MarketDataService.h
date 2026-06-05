@@ -201,12 +201,7 @@ class MarketDataService : public QObject
     QHash<QString, QString> name_cache_;
     QHash<QString, QString> currency_cache_;  // symbol → ISO currency code (e.g. "USD")
     bool name_cache_loaded_ = false;
-
-    // ── Batching ──
-    struct PendingRequest {
-        QStringList symbols;
-        QuoteCallback cb;
-    };    QVector<PendingRequest> pending_;
+    QVector<PendingRequest> pending_;
     bool batch_scheduled_ = false;
 
     bool hub_registered_ = false;

@@ -559,7 +559,7 @@ void CryptoBottomPanel::set_positions(const QVector<trading::PtPosition>& positi
         const QColor bg = (i % 2 == 0) ? kRowEven() : kRowOdd();
 
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
-                       int align = Qt::AlignLeft | Qt::AlignVCenter) {
+                       Qt::Alignment align = Qt::AlignLeft | Qt::AlignVCenter) {
             auto* it = ensure_item(positions_table_, i, col);
             if (it->text() != text)
                 it->setText(text);
@@ -568,7 +568,7 @@ void CryptoBottomPanel::set_positions(const QVector<trading::PtPosition>& positi
                 it->setForeground(fg);
             if (it->background().color() != bg)
                 it->setBackground(bg);
-            if (it->textAlignment() != align)
+            if (Qt::Alignment(it->textAlignment()) != align)
                 it->setTextAlignment(align);
         };
 
@@ -644,7 +644,7 @@ void CryptoBottomPanel::set_orders(const QVector<trading::PtOrder>& orders) {
         const QColor bg = (i % 2 == 0) ? kRowEven() : kRowOdd();
 
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
-                       int align = Qt::AlignLeft | Qt::AlignVCenter) {
+                       Qt::Alignment align = Qt::AlignLeft | Qt::AlignVCenter) {
             auto* it = ensure_item(orders_table_, i, col);
             it->setText(text);
             if (fg.isValid())
@@ -691,7 +691,7 @@ void CryptoBottomPanel::set_trades(const QVector<trading::PtTrade>& trades) {
         const QColor bg = (i % 2 == 0) ? kRowEven() : kRowOdd();
 
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
-                       int align = Qt::AlignLeft | Qt::AlignVCenter) {
+                       Qt::Alignment align = Qt::AlignLeft | Qt::AlignVCenter) {
             auto* it = ensure_item(trades_table_, i, col);
             it->setText(text);
             if (fg.isValid())
@@ -768,7 +768,7 @@ void CryptoBottomPanel::set_live_positions(const QJsonArray& positions) {
         const QColor bg = (i % 2 == 0) ? kRowEven() : kRowOdd();
 
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
-                       int align = Qt::AlignLeft | Qt::AlignVCenter) {
+                       Qt::Alignment align = Qt::AlignLeft | Qt::AlignVCenter) {
             auto* it = ensure_item(positions_table_, i, col);
             it->setText(text);
             if (fg.isValid())
@@ -803,7 +803,7 @@ void CryptoBottomPanel::set_live_orders(const QJsonArray& orders) {
         const QColor bg = (i % 2 == 0) ? kRowEven() : kRowOdd();
 
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
-                       int align = Qt::AlignLeft | Qt::AlignVCenter) {
+                       Qt::Alignment align = Qt::AlignLeft | Qt::AlignVCenter) {
             auto* it = ensure_item(orders_table_, i, col);
             it->setText(text);
             if (fg.isValid())
@@ -839,8 +839,8 @@ void CryptoBottomPanel::set_live_orders(const QJsonArray& orders) {
     update_empty_state(orders_table_, orders_stack_, n);
 }
 
-void CryptoBottomPanel::update_my_trades(const QJsonObject& data) {
-    const QJsonArray trades = data.value("trades").toArray();
+void CryptoBottomPanel::update_my_trades(const QJsonObject& json) {
+    const QJsonArray trades = json.value("trades").toArray();
     const int n = trades.size();
     my_trades_table_->setUpdatesEnabled(false);
     if (my_trades_table_->rowCount() != n)
@@ -851,7 +851,7 @@ void CryptoBottomPanel::update_my_trades(const QJsonObject& data) {
         const QColor bg = (i % 2 == 0) ? kRowEven() : kRowOdd();
 
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
-                       int align = Qt::AlignLeft | Qt::AlignVCenter) {
+                       Qt::Alignment align = Qt::AlignLeft | Qt::AlignVCenter) {
             auto* it = ensure_item(my_trades_table_, i, col);
             it->setText(text);
             if (fg.isValid())
@@ -881,7 +881,8 @@ void CryptoBottomPanel::update_fees(const QJsonObject& json) {
     auto write_row = [&](int row, const QColor& bg, const QString& sym, double maker, double taker) {
         auto set = [&](int col, const QString& text, const QColor& fg = QColor(),
                        Qt::Alignment align = Qt::AlignRight | Qt::AlignVCenter) {
-            auto* it = ensure_item(fees_table_, row, col);            it->setText(text);
+            auto* it = ensure_item(fees_table_, row, col);
+            it->setText(text);
             if (fg.isValid())
                 it->setForeground(fg);
             it->setBackground(bg);
@@ -896,12 +897,14 @@ void CryptoBottomPanel::update_fees(const QJsonObject& json) {
         fees_table_->setUpdatesEnabled(false);
         fees_table_->setRowCount(1);
         write_row(0, kRowEven(), json.value("symbol").toString(),
-                  json.value("maker").toDouble(), json.value("taker").toDouble());        fees_table_->setUpdatesEnabled(true);
+                  json.value("maker").toDouble(), json.value("taker").toDouble());
+        fees_table_->setUpdatesEnabled(true);
         update_empty_state(fees_table_, fees_stack_, 1);
         return;
     }
 
-    const QJsonArray fees = json.value("fees").toArray();    const int n = fees.size();
+    const QJsonArray fees = json.value("fees").toArray();
+    const int n = fees.size();
     fees_table_->setUpdatesEnabled(false);
     if (fees_table_->rowCount() != n)
         fees_table_->setRowCount(n);

@@ -82,7 +82,7 @@ void TerminalToolBridge::register_tools() {
 
     QPointer<TerminalToolBridge> self = this;
     ChatModeService::instance().register_terminal_tools(
-        tools_json, "4.0.0", count, [self, gen, count](bool ok, int registered, QString err) {
+        tools_json, "4.0.0", count, [self, gen](bool ok, int registered, QString err) {
             if (!self)
                 return;
             if (!ok) {
@@ -138,7 +138,8 @@ void TerminalToolBridge::execute_call(const QString& call_id, const QString& too
     // multiple in-flight tool calls fan out concurrently. A QFutureWatcher
     // delivers the result back to this bridge's thread when complete.
     QPointer<TerminalToolBridge> self = this;
-    auto future = mcp::McpProvider::instance().call_tool_async(local_name, arguments);
+    auto future = mcp::McpProvider::instance().call_tool_async(local_name, arguments);
+
     auto* watcher = new QFutureWatcher<mcp::ToolResult>(this);
     QObject::connect(watcher, &QFutureWatcher<mcp::ToolResult>::finished, this,
                      [self, call_id, local_name, watcher]() {

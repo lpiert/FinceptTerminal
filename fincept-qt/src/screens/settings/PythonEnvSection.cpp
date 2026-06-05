@@ -143,7 +143,7 @@ void PythonEnvSection::build_ui() {
     warn_layout->setContentsMargins(10, 7, 10, 7);
     warn_layout->setSpacing(8);
 
-    auto* warn_icon = new QLabel("鈿?, this);
+    auto* warn_icon = new QLabel("!", this);
     warn_icon->setStyleSheet(
         QString("color:%1;font-size:14px;background:transparent;font-weight:bold;")
             .arg(ui::colors::AMBER()));
@@ -570,7 +570,7 @@ void PythonEnvSection::merge_and_populate_table() {
         pkg_table_->setItem(i, 3, req_item);
 
         // Col 4: installed version
-        auto* inst_item = new QTableWidgetItem(row.missing ? QString("鈥?) : row.installed_ver);
+        auto* inst_item = new QTableWidgetItem(row.missing ? QString("-") : row.installed_ver);
         inst_item->setForeground(QColor(row.missing ? ui::colors::TEXT_TERTIARY() : ui::colors::TEXT_PRIMARY()));
         inst_item->setTextAlignment(Qt::AlignCenter);
         pkg_table_->setItem(i, 4, inst_item);

@@ -409,210 +409,104 @@ void MarketDataService::flush_batch() {
     }
     QStringList all_symbols = all_symbols_set.values();
 
-    // Separate China market symbols from global symbols
-    QStringList china_symbols;
-    QStringList global_symbols;
-    for (const auto& sym : all_symbols) {
-        // China market detection: contains .SS, .SZ, .BJ, .HK, .SHF, etc.
-        if (sym.contains(".SS") || sym.contains(".SZ") || sym.contains(".BJ") ||
-            sym.contains(".HK") || sym.contains(".SHF") || sym.contains(".CZC") ||
-            sym.contains(".DCE") || sym.contains(".CFX")) {
-            china_symbols.append(sym);
-        } else {
-            global_symbols.append(sym);
-        }
-    }
-
     // Take ownership of pending callbacks
     auto requests = std::move(pending_);
     pending_.clear();
 
     LOG_INFO("MarketData",
-             QString("Batch fetch: %1 global + %2 China symbols from %3 requests")
-                 .arg(global_symbols.size())
-                 .arg(china_symbols.size())
-                 .arg(requests.size()));
-
-    // Process global symbols via yfinance
-    if (!global_symbols.isEmpty()) {
-        QStringList args;
-        args << "batch_quotes";
-        args.append(global_symbols);
-
-        python::PythonRunner::instance().run(
-            "yfinance_data.py", args, [this, requests, china_symbols](python::PythonResult result) {
-                process_global_quotes(result, requests, china_symbols);
-            });
-    } else if (!china_symbols.isEmpty()) {
-        // Only China symbols — direct call
-        process_china_quotes({}, requests, china_symbols);
-    }
-}
-
-void MarketDataService::process_global_quotes(python::PythonResult result,
-                                               QVector<PendingRequest> requests,
-                                               const QStringList& china_symbols) {
-    QVector<QuoteData> all_quotes;
-
-    if (result.success) {
-        auto doc = QJsonDocument::fromJson(result.output.toUtf8());
-
-        auto parse_quote = [](const QJsonObject& q) -> QuoteData {
-            return {q["symbol"].toString(),
-                    q["name"].toString(q["symbol"].toString()),
-                    q["price"].toDouble(),
-                    q["change"].toDouble(),
-                    q["change_percent"].toDouble(),
-                    q["high"].toDouble(),
-                    q["low"].toDouble(),
-                    q["volume"].toDouble()};
-        };
-
-        auto store_quote = [this](const QuoteData& q) {
-            QJsonObject o;
-            o["symbol"] = q.symbol;
-            o["name"] = q.name;
-            o["price"] = q.price;
-            o["change"] = q.change;
-            o["change_pct"] = q.change_pct;
-            o["high"] = q.high;
-            o["low"] = q.low;
-            o["volume"] = q.volume;
-            fincept::CacheManager::instance().put(
-                "market:" + q.symbol,
-                QVariant(QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact))), kQuoteCacheTtlSec,
-                "market_data");
-        };
-
-        if (doc.isArray()) {
-            for (const auto& v : doc.array()) {
-                auto q = v.toObject();
-                if (q.contains("error"))
-                    continue;
-                auto quote = parse_quote(q);
-                all_quotes.append(quote);
-                store_quote(quote);
-                publish_quote_to_hub(quote);
-            }
-        } else if (doc.isObject()) {
-            auto obj = doc.object();
-            if (obj.contains("symbol") && !obj.contains("error")) {
-                auto quote = parse_quote(obj);
-                all_quotes.append(quote);
-                store_quote(quote);
-                publish_quote_to_hub(quote);
-            }
-        }
-
-        LOG_INFO("MarketData", QString("Fetched %1 global quotes").arg(all_quotes.size()));
-    } else {
-        LOG_WARN("MarketData", "Global batch fetch failed: " + result.error);
-    }
-
-    // Now fetch China market symbols if any
-    if (!china_symbols.isEmpty()) {
-        process_china_quotes(all_quotes, std::move(requests), china_symbols);
-    } else {
-        // No China symbols — fan out results to callbacks
-        fan_out_results(result, std::move(requests), all_quotes);
-    }
-}
-
-void MarketDataService::process_china_quotes(QVector<QuoteData> existing_quotes,
-                                              QVector<PendingRequest> requests,
-                                              const QStringList& china_symbols) {
-    QVector<QuoteData> all_quotes = std::move(existing_quotes);
+             QString("Batch fetch: %1 unique symbols from %2 requests").arg(all_symbols.size()).arg(requests.size()));
 
     QStringList args;
-    args << "--symbols" << china_symbols.join(",") << "--type" << "quote";
+    args << "batch_quotes";
+    args.append(all_symbols);
 
     python::PythonRunner::instance().run(
-        "china_market_data.py", args, [this, requests, all_quotes](python::PythonResult result) mutable {
+        "yfinance_data.py", args, [this, requests = std::move(requests)](python::PythonResult result) {
+            QVector<QuoteData> all_quotes;
+
             if (result.success) {
                 auto doc = QJsonDocument::fromJson(result.output.toUtf8());
-                if (doc.isObject() && doc.object()["success"].toBool()) {
-                    auto data_array = doc.object()["data"].toArray();
 
-                    for (const auto& v : data_array) {
-                        auto q = v.toObject();
-                        QuoteData quote = {
-                            q["symbol"].toString(),
-                            q["name"].toString(),
+                auto parse_quote = [](const QJsonObject& q) -> QuoteData {
+                    return {q["symbol"].toString(),
+                            q["name"].toString(q["symbol"].toString()),
                             q["price"].toDouble(),
                             q["change"].toDouble(),
-                            q["change_pct"].toDouble(),
+                            q["change_percent"].toDouble(),
                             q["high"].toDouble(),
                             q["low"].toDouble(),
-                            q["volume"].toDouble()
-                        };
+                            q["volume"].toDouble()};
+                };
 
-                        // Cache and publish
-                        QJsonObject cache_obj;
-                        cache_obj["symbol"] = quote.symbol;
-                        cache_obj["name"] = quote.name;
-                        cache_obj["price"] = quote.price;
-                        cache_obj["change"] = quote.change;
-                        cache_obj["change_pct"] = quote.change_pct;
-                        cache_obj["high"] = quote.high;
-                        cache_obj["low"] = quote.low;
-                        cache_obj["volume"] = quote.volume;
+                auto store_quote = [](const QuoteData& q) {
+                    QJsonObject o;
+                    o["symbol"] = q.symbol;
+                    o["name"] = q.name;
+                    o["price"] = q.price;
+                    o["change"] = q.change;
+                    o["change_pct"] = q.change_pct;
+                    o["high"] = q.high;
+                    o["low"] = q.low;
+                    o["volume"] = q.volume;
+                    fincept::CacheManager::instance().put(
+                        "market:" + q.symbol,
+                        QVariant(QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact))), kQuoteCacheTtlSec,
+                        "market_data");
+                };
 
-                        fincept::CacheManager::instance().put(
-                            "market:" + quote.symbol,
-                            QVariant(QString::fromUtf8(QJsonDocument(cache_obj).toJson(QJsonDocument::Compact))),
-                            kQuoteCacheTtlSec, "market_data");
-
+                if (doc.isArray()) {
+                    for (const auto& v : doc.array()) {
+                        auto q = v.toObject();
+                        if (q.contains("error"))
+                            continue;
+                        auto quote = parse_quote(q);
                         all_quotes.append(quote);
+                        store_quote(quote);
                         publish_quote_to_hub(quote);
                     }
-
-                    LOG_INFO("MarketData", QString("Fetched %1 China quotes").arg(data_array.size()));
+                } else if (doc.isObject()) {
+                    auto obj = doc.object();
+                    if (obj.contains("symbol") && !obj.contains("error")) {
+                        auto quote = parse_quote(obj);
+                        all_quotes.append(quote);
+                        store_quote(quote);
+                        publish_quote_to_hub(quote);
+                    }
                 }
+
+                LOG_INFO("MarketData", QString("Fetched %1 quotes (cached)").arg(all_quotes.size()));
             } else {
-                LOG_WARN("MarketData", "China market fetch failed: " + result.error);
+                LOG_WARN("MarketData", "Batch fetch failed: " + result.error);
             }
 
-            // Fan out all results (global + China) to callbacks
-            fan_out_results(result, requests, all_quotes);
-        });
-}
-
-void MarketDataService::fan_out_results(python::PythonResult result,
-                                         const QVector<PendingRequest>& requests,
-                                         const QVector<QuoteData>& all_quotes) {
-    for (const auto& req : requests) {
-        if (!result.success && all_quotes.isEmpty()) {
-            // On failure, try to serve from stale cache (ignoring TTL)
-            QVector<QuoteData> stale;
-            for (const auto& sym : req.symbols) {
-                const QVariant cv = fincept::CacheManager::instance().get("market:" + sym);
-                if (!cv.isNull()) {
-                    const QJsonObject o = QJsonDocument::fromJson(cv.toString().toUtf8()).object();
-                    stale.append({o["symbol"].toString(), o["name"].toString(), o["price"].toDouble(),
-                                  o["change"].toDouble(), o["change_pct"].toDouble(), o["high"].toDouble(),
-                                  o["low"].toDouble(), o["volume"].toDouble()});
+            // Fan out results to each waiting callback, filtered to their requested symbols
+            for (const auto& req : requests) {
+                if (!result.success) {
+                    // On failure, try to serve from stale cache (ignoring TTL)
+                    QVector<QuoteData> stale;
+                    for (const auto& sym : req.symbols) {
+                        const QVariant cv = fincept::CacheManager::instance().get("market:" + sym);
+                        if (!cv.isNull()) {
+                            const QJsonObject o = QJsonDocument::fromJson(cv.toString().toUtf8()).object();
+                            stale.append({o["symbol"].toString(), o["name"].toString(), o["price"].toDouble(),
+                                          o["change"].toDouble(), o["change_pct"].toDouble(), o["high"].toDouble(),
+                                          o["low"].toDouble(), o["volume"].toDouble()});
+                        }
+                    }
+                    req.cb(!stale.isEmpty(), stale);
+                    continue;
                 }
-            }
-            req.cb(!stale.isEmpty(), stale);
-            continue;
-        }
 
-        QSet<QString> wanted(req.symbols.begin(), req.symbols.end());
-        QVector<QuoteData> filtered;
-        for (const auto& q : all_quotes) {
-            if (wanted.contains(q.symbol)) {
-                filtered.append(q);
+                QSet<QString> wanted(req.symbols.begin(), req.symbols.end());
+                QVector<QuoteData> filtered;
+                for (const auto& q : all_quotes) {
+                    if (wanted.contains(q.symbol)) {
+                        filtered.append(q);
+                    }
+                }
+                req.cb(true, filtered);
             }
-        }
-        req.cb(true, filtered);
-    }
-}
-
-// Legacy flush_batch_simple kept for backward compatibility
-void MarketDataService::flush_batch_simple() {
-    // This function is deprecated - use flush_batch() instead
-    LOG_WARN("MarketData", "flush_batch_simple() is deprecated, using flush_batch()");
-    flush_batch();
+        });
 }
 
 // ── News fetch (unchanged) ──────────────────────────────────────────────────
@@ -797,18 +691,18 @@ QStringList MarketDataService::global_snapshot_symbols() {
 
 QVector<MarketCategory> MarketDataService::default_global_markets() {
     return {
-        {QObject::tr("Stock Indices"),
+        {"Stock Indices",
          {"^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX", "^FTSE", "^GDAXI", "^N225", "^FCHI", "^HSI", "^AXJO", "^BSESN",
           "^NSEI", "^STOXX50E", "^NYA", "^SOX", "^IBEX", "^AEX"}},
-        {QObject::tr("Forex"),
+        {"Forex",
          {"EURUSD=X", "GBPUSD=X", "USDJPY=X", "USDCHF=X", "USDCAD=X", "AUDUSD=X", "NZDUSD=X", "EURGBP=X", "EURJPY=X",
           "GBPJPY=X", "USDCNY=X", "USDINR=X"}},
-        {QObject::tr("Commodities"),
+        {"Commodities",
          {"GC=F", "SI=F", "PL=F", "PA=F", "HG=F", "CL=F", "BZ=F", "NG=F", "RB=F", "HO=F", "ZC=F", "ZW=F", "ZS=F",
           "KC=F", "CT=F", "SB=F", "CC=F", "LBS=F"}},
-        {QObject::tr("Bonds"), {"^TNX", "^TYX", "^IRX", "^FVX", "TLT", "IEF", "SHY", "BND", "AGG", "LQD", "HYG", "JNK"}},
-        {QObject::tr("ETFs"), {"SPY", "QQQ", "DIA", "EEM", "GLD", "XLK", "XLE", "XLF", "XLV", "VNQ", "IWM", "VTI"}},
-        {QObject::tr("Cryptocurrencies"),
+        {"Bonds", {"^TNX", "^TYX", "^IRX", "^FVX", "TLT", "IEF", "SHY", "BND", "AGG", "LQD", "HYG", "JNK"}},
+        {"ETFs", {"SPY", "QQQ", "DIA", "EEM", "GLD", "XLK", "XLE", "XLF", "XLV", "VNQ", "IWM", "VTI"}},
+        {"Cryptocurrencies",
          {"BTC-USD", "ETH-USD", "BNB-USD", "SOL-USD", "XRP-USD", "ADA-USD", "DOGE-USD", "LINK-USD", "DOT-USD",
           "AVAX-USD", "UNI-USD", "ATOM-USD"}},
     };
@@ -816,7 +710,7 @@ QVector<MarketCategory> MarketDataService::default_global_markets() {
 
 QVector<RegionalMarket> MarketDataService::default_regional_markets() {
     return {
-        {QObject::tr("India"),
+        {"India",
          {
              {"RELIANCE.NS", "Reliance Industries"},
              {"TCS.NS", "Tata Consultancy"},
@@ -831,7 +725,7 @@ QVector<RegionalMarket> MarketDataService::default_regional_markets() {
              {"LT.NS", "Larsen & Toubro"},
              {"WIPRO.NS", "Wipro Limited"},
          }},
-        {QObject::tr("China"),
+        {"China",
          {
              {"BABA", "Alibaba Group"},
              {"PDD", "PDD Holdings"},
@@ -846,7 +740,7 @@ QVector<RegionalMarket> MarketDataService::default_regional_markets() {
              {"VNET", "VNET Group"},
              {"TAL", "TAL Education"},
          }},
-        {QObject::tr("United States"),
+        {"United States",
          {
              {"AAPL", "Apple Inc"},
              {"MSFT", "Microsoft Corp"},
@@ -1015,6 +909,7 @@ void MarketDataService::resolve_names(const QStringList& symbols, NamesCallback 
             // Re-deliver with whatever resolved (cached subset now richer).
             if (cb)
                 cb(subset_for(symbols));
-        });}
+        });
+}
 
 } // namespace fincept::services

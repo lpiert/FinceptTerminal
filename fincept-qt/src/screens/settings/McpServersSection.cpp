@@ -1,4 +1,4 @@
-// McpServersSection.cpp 鈥?MCP external server management panel (Qt port)
+// McpServersSection.cpp — MCP external server management panel (Qt port)
 
 #include "screens/settings/McpServersSection.h"
 
@@ -221,7 +221,7 @@ QWidget* McpServersSection::build_servers_tab() {
 
     // Start/Stop buttons
     auto* server_btns = new QHBoxLayout;
-    start_btn_ = new QPushButton(tr("鈻? Start"));
+    start_btn_ = new QPushButton(tr("▶  Start"));
     start_btn_->setEnabled(false);
     start_btn_->setFixedHeight(32);
     start_btn_->setStyleSheet(
@@ -237,7 +237,7 @@ QWidget* McpServersSection::build_servers_tab() {
         ";background:" + QString(ui::colors::BG_BASE()) + ";}");
     connect(start_btn_, &QPushButton::clicked, this, &McpServersSection::on_start_server);
 
-    stop_btn_ = new QPushButton(tr("鈻? Stop"));
+    stop_btn_ = new QPushButton(tr("■  Stop"));
     stop_btn_->setEnabled(false);
     stop_btn_->setFixedHeight(32);
     stop_btn_->setStyleSheet(
@@ -282,7 +282,7 @@ QWidget* McpServersSection::build_tools_tab() {
     vl->setSpacing(8);
 
     tools_info_lbl_ =
-        new QLabel(tr("All registered MCP tools 鈥?both internal (built-in) and external (from connected servers)."));
+        new QLabel(tr("All registered MCP tools — both internal (built-in) and external (from connected servers)."));
     tools_info_lbl_->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";");
     tools_info_lbl_->setWordWrap(true);
     vl->addWidget(tools_info_lbl_);
@@ -457,11 +457,11 @@ void McpServersSection::load_servers() {
     for (const auto& cfg : servers) {
         QString status_icon;
         if (cfg.status == ServerStatus::Running)
-            status_icon = "鈼?";
+            status_icon = "● ";
         else if (cfg.status == ServerStatus::Error)
-            status_icon = "鉁?";
+            status_icon = "✕ ";
         else
-            status_icon = "鈼?";
+            status_icon = "○ ";
 
         auto* item = new QListWidgetItem(status_icon + cfg.name);
         item->setData(Qt::UserRole, cfg.id);
@@ -593,7 +593,7 @@ void McpServersSection::on_start_server() {
 
     QPointer<McpServersSection> self = this;
     QString id = selected_server_id_;
-    QtConcurrent::run([self, id]() {
+    (void)QtConcurrent::run([self, id]() {
         auto r = McpManager::instance().start_server(id);
         QMetaObject::invokeMethod(
             qApp,
@@ -668,17 +668,17 @@ void McpServersSection::retranslateUi() {
     if (server_list_lbl_) server_list_lbl_->setText(tr("External Servers"));
     if (add_btn_)         add_btn_->setText(tr("+ Add"));
     if (remove_btn_)      remove_btn_->setText(tr("Remove"));
-    if (start_btn_)       start_btn_->setText(tr("鈻? Start"));
-    if (stop_btn_)        stop_btn_->setText(tr("鈻? Stop"));
+    if (start_btn_)       start_btn_->setText(tr("▶  Start"));
+    if (stop_btn_)        stop_btn_->setText(tr("■  Stop"));
 
     // Tools tab chrome.
     if (tools_info_lbl_)
         tools_info_lbl_->setText(
-            tr("All registered MCP tools 鈥?both internal (built-in) and external (from connected servers)."));
+            tr("All registered MCP tools — both internal (built-in) and external (from connected servers)."));
     if (tools_table_)
         tools_table_->setHorizontalHeaderLabels({tr("Tool Name"), tr("Server"), tr("Category"), tr("Description")});
 
-    // Detail panel default placeholder 鈥?only re-apply when nothing is selected
+    // Detail panel default placeholder — only re-apply when nothing is selected
     // (otherwise we'd clobber the live per-server detail HTML).
     if (detail_lbl_ && selected_server_id_.isEmpty() && server_list_ && server_list_->count() == 0)
         detail_lbl_->setText(tr("No external servers configured.\nClick '+ Add' to add one."));

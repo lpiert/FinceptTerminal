@@ -352,7 +352,8 @@ QWidget* DBnomicsScreen::build_toolbar() {
 
     refresh_btn_ = new QPushButton(tr("REFRESH"), toolbar);
     refresh_btn_->setStyleSheet(btn_style);
-    connect(refresh_btn_, &QPushButton::clicked, this, &DBnomicsScreen::on_refresh_clicked);
+    connect(refresh_btn_, &QPushButton::clicked, this, &DBnomicsScreen::on_refresh_clicked);
+
     export_btn_ = new QPushButton(tr("EXPORT CSV"), toolbar);
     export_btn_->setStyleSheet(btn_style);
     connect(export_btn_, &QPushButton::clicked, this, &DBnomicsScreen::on_export_csv);
@@ -475,8 +476,8 @@ void DBnomicsScreen::on_series_loaded(const QVector<services::DbnSeriesInfo>& se
     set_status(tr("Loaded %1 series").arg(series.size()));
 }
 
-void DBnomicsScreen::on_observations_loaded(const services::DbnDataPoint& data) {
-    last_loaded_data_ = data;
+void DBnomicsScreen::on_observations_loaded(const services::DbnDataPoint& point) {
+    last_loaded_data_ = point;
     has_pending_data_ = true;
 
     // Always stop loading spinners — data has arrived
@@ -485,9 +486,9 @@ void DBnomicsScreen::on_observations_loaded(const services::DbnDataPoint& data) 
 
     // Check if this series is already in single_series_
     for (auto& s : single_series_) {
-        if (s.series_id == data.series_id) {
-            s.observations = data.observations;
-            s.series_name = data.series_name;
+        if (s.series_id == point.series_id) {
+            s.observations = point.observations;
+            s.series_name = point.series_name;
             render_single_view();
             return;
         }
@@ -495,7 +496,8 @@ void DBnomicsScreen::on_observations_loaded(const services::DbnDataPoint& data) 
 
     // Not yet in view — prompt user
     set_status(tr("Loaded: %1  •  Click ADD TO SINGLE VIEW").arg(point.series_name));
-    LOG_INFO("DBnomicsScreen", QString("Observations loaded for: %1").arg(point.series_id));}
+    LOG_INFO("DBnomicsScreen", QString("Observations loaded for: %1").arg(point.series_id));
+}
 
 void DBnomicsScreen::on_search_results_loaded(const QVector<services::DbnSearchResult>& results,
                                               const services::DbnPagination& page, bool append) {

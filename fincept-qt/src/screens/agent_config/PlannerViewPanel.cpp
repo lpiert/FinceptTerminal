@@ -91,7 +91,8 @@ QWidget* PlannerViewPanel::build_templates_panel() {
         const auto pr = fincept::LlmProfileRepository::instance().list_profiles();
         const auto profiles = pr.is_ok() ? pr.value() : QVector<fincept::LlmProfile>{};
         for (const auto& prof : profiles)
-            llm_profile_combo_->addItem(prof.is_default ? prof.name + tr(" [default]") : prof.name, prof.id);    }
+            llm_profile_combo_->addItem(prof.is_default ? prof.name + tr(" [default]") : prof.name, prof.id);
+    }
     vl->addWidget(llm_profile_combo_);
 
     portfolio_title_ = new QLabel(tr("PORTFOLIO:"));

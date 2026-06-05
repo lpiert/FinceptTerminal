@@ -76,7 +76,8 @@ class LoginScreen : public QWidget {
     void changeEvent(QEvent* event) override;
     /// Wipe email/password/MFA fields whenever the screen leaves the stack so
     /// credentials do not linger across logout → login cycles.
-    void hideEvent(QHideEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
+
   private slots:
     void on_login();
     void on_mfa_verify();

@@ -222,16 +222,9 @@ struct SessionData {
         return subscription.account_type.isEmpty() ? user_info.account_type : subscription.account_type;
     }
 
-    /// Check if user has paid subscription
-    /// TODO: [FREE-MODE] Currently bypassed for personal use
-    /// To restore: check actual subscription status from API
     bool has_paid_plan() const {
-        // [FREE-MODE-STUB] Always return true to unlock all features
-        // Original logic:
-        // const QString at = account_type().toLower();
-        // return at == "basic" || at == "standard" || at == "pro" || at == "enterprise";
-        Q_UNUSED(account_type());
-        return true;  // Free mode: all features unlocked
+        const QString at = account_type().toLower();
+        return at == "basic" || at == "standard" || at == "pro" || at == "enterprise";
     }
 
     QJsonObject to_json() const {

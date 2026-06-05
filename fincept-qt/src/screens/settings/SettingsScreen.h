@@ -1,5 +1,5 @@
 #pragma once
-// SettingsScreen.h 鈥?top-level settings shell. Hosts a left-nav + QStackedWidget
+// SettingsScreen.h — top-level settings shell. Hosts a left-nav + QStackedWidget
 // of sub-section widgets. All section state and UI lives in *Section.h/.cpp
 // files in this directory; this class only owns the navigation, the MCP
 // event subscription that triggers a cross-section reload, and the centralised
@@ -54,7 +54,7 @@ class SettingsScreen : public QWidget, public IStatefulScreen {
     /// section picks up the active QTranslator at construction time.
     void rebuild_sections_for_language_change();
 
-    /// Nav button 鈫?source key map used to retranslate button labels and
+    /// Nav button → source key map used to retranslate button labels and
     /// scope headers without rebuilding the nav.
     struct NavButton { QPushButton* btn; QString source_key; };
     QList<NavButton> nav_buttons_;
@@ -65,7 +65,7 @@ class SettingsScreen : public QWidget, public IStatefulScreen {
     /// path so we can recreate widgets without hardcoding the type list twice.
     QList<std::function<QWidget*()>> section_factories_;
 
-    // 鈹€鈹€ MCP-driven UI sync 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── MCP-driven UI sync ────────────────────────────────────────────────────
     QList<EventBus::HandlerId> mcp_event_subs_;
     void subscribe_mcp_events();
     void unsubscribe_mcp_events();

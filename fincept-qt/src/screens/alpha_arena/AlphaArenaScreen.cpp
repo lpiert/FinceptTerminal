@@ -121,7 +121,8 @@ QWidget* AlphaArenaScreen::build_header() {
     connect(apply_cadence_btn_, &QPushButton::clicked, this, [this]() {
         auto r = AlphaArenaEngine::instance().set_cadence(hot_cadence_spin_->value());
         if (r.is_err()) {
-            QMessageBox::warning(this, tr("Alpha Arena"), QString::fromStdString(r.error()));        }
+            QMessageBox::warning(this, tr("Alpha Arena"), QString::fromStdString(r.error()));
+        }
     });
     hl->addWidget(apply_cadence_btn_);
 

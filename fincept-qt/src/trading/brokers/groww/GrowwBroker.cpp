@@ -211,11 +211,11 @@ TokenExchangeResponse GrowwBroker::exchange_token(const QString& api_key, const 
     auto resp = BrokerHttp::instance().post_json("https://api.groww.in/v1/token/api/access", body, headers);
 
     if (!resp.success)
-        return {false, "", "", "", checked_error(resp, "Network error")};
+        return {false, "", "", "", checked_error(resp, "Network error"), ""};
 
     QString token = resp.json["token"].toString();
     if (token.isEmpty())
-        return {false, "", "", "", checked_error(resp, "No token in response")};
+        return {false, "", "", "", checked_error(resp, "No token in response"), ""};
 
     // Groww daily access tokens are minted purely from the api_key + api_secret
     // (checksum flow) — both are stored, so the session can be silently
@@ -228,7 +228,8 @@ TokenExchangeResponse GrowwBroker::exchange_token(const QString& api_key, const 
 TokenExchangeResponse GrowwBroker::refresh_session(const BrokerCredentials& creds) {
     if (creds.api_key.isEmpty() || creds.api_secret.isEmpty())
         return {false, "", "", "", "", "Groww silent refresh requires stored API key and secret"};
-    return exchange_token(creds.api_key, creds.api_secret, QString());}
+    return exchange_token(creds.api_key, creds.api_secret, QString());
+}
 
 // ============================================================================
 // Phase 3: Order operations

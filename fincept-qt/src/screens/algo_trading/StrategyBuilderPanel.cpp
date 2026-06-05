@@ -186,7 +186,8 @@ QWidget* StrategyBuilderPanel::build_top_toolbar() {
         auto* d = new QWidget(this);
         d->setFixedSize(1, 24);
         d->setStyleSheet(QString("background:%1;").arg(ui::colors::BORDER_DIM()));
-        return d;    };
+        return d;
+    };
 
     // ── Identity group: name + description ──
     name_edit_ = new QLineEdit(this);
@@ -564,7 +565,8 @@ QString StrategyBuilderPanel::validate() const {
 
 void StrategyBuilderPanel::on_backtest_result(const QJsonObject& payload) {
     status_label_->setText(tr("Backtest complete."));
-    display_backtest_result(payload);    LOG_INFO("AlgoTrading", "Backtest result displayed");
+    display_backtest_result(payload);
+    LOG_INFO("AlgoTrading", "Backtest result displayed");
 }
 
 void StrategyBuilderPanel::on_error(const QString& context, const QString& msg) {

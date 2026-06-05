@@ -2,13 +2,15 @@
 #include "screens/setup/SetupScreen.h"
 
 #include "core/logging/Logger.h"
+#include "core/net/NetSpeedMeter.h"
 #include "python/PythonSetupManager.h"
 #include "ui/theme/Theme.h"
 #include "ui/widgets/LanguageSwitcher.h"
 #include "ui/widgets/SpeedSparkline.h"
 
 #include <QDateTime>
-#include <QEvent>
+#include <QEvent>
+
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
@@ -51,7 +53,8 @@ SetupScreen::SetupScreen(QWidget* parent) : QWidget(parent) {
 
     elapsed_timer_ = new QTimer(this);
     elapsed_timer_->setInterval(1000);
-    connect(elapsed_timer_, &QTimer::timeout, this, &SetupScreen::on_elapsed_tick);}
+    connect(elapsed_timer_, &QTimer::timeout, this, &SetupScreen::on_elapsed_tick);
+}
 
 void SetupScreen::changeEvent(QEvent* event) {
     if (event->type() == QEvent::LanguageChange) {
@@ -92,7 +95,8 @@ void SetupScreen::build_ui() {
     title_lbl_->setAlignment(Qt::AlignCenter);
     title_lbl_->setStyleSheet(QString("color:%1; font-family:%2; font-size:24px; font-weight:700; letter-spacing:3px;")
                                   .arg(kAccent, fonts::DATA_FAMILY));
-    cl->addWidget(title_lbl_);
+    cl->addWidget(title_lbl_);
+
     subtitle_lbl_ = new QLabel(center);
     subtitle_lbl_->setAlignment(Qt::AlignCenter);
     subtitle_lbl_->setStyleSheet(
@@ -122,7 +126,8 @@ void SetupScreen::build_ui() {
 
     cl->addSpacing(16);
 
-    begin_btn_ = new QPushButton(center);    begin_btn_->setFixedHeight(46);
+    begin_btn_ = new QPushButton(center);
+    begin_btn_->setFixedHeight(46);
     begin_btn_->setCursor(Qt::PointingHandCursor);
     begin_btn_->setStyleSheet(
         QString("QPushButton { background:%1; color:%2; border:none;"
@@ -174,7 +179,8 @@ void SetupScreen::build_ui() {
 
     cl->addWidget(live_row_);
 
-    summary_lbl_ = new QLabel(center);    summary_lbl_->setAlignment(Qt::AlignCenter);
+    summary_lbl_ = new QLabel(center);
+    summary_lbl_->setAlignment(Qt::AlignCenter);
     summary_lbl_->setWordWrap(true);
     summary_lbl_->setStyleSheet(
         QString("color:%1; font-family:%2; font-size:10px;").arg(colors::TEXT_TERTIARY(), fonts::DATA_FAMILY));
@@ -473,7 +479,8 @@ void SetupScreen::on_begin_setup() {
         net_meter_->start(1000);
     if (elapsed_timer_)
         elapsed_timer_->start();
-    if (timeout_timer_)
+
+    if (timeout_timer_)
         timeout_timer_->start();
     python::PythonSetupManager::instance().run_setup();
 }
@@ -495,7 +502,8 @@ void SetupScreen::on_elapsed_tick() {
     elapsed_secs_ = (QDateTime::currentMSecsSinceEpoch() - setup_started_ms_) / 1000;
     update_elapsed_label();
 }
-void SetupScreen::on_progress(const python::SetupProgress& progress) {
+
+void SetupScreen::on_progress(const python::SetupProgress& progress) {
     const QString& key = progress.step;
 
     if (steps_.contains(key)) {
@@ -536,7 +544,8 @@ void SetupScreen::on_setup_done(bool success, const QString& error) {
         net_meter_->stop();
     if (elapsed_timer_)
         elapsed_timer_->stop();
-    if (success) {
+
+    if (success) {
         LOG_INFO("SetupScreen", "Python setup completed — all steps done");
         status_state_ = StatusState::AllDone;
         status_detail_.clear();
@@ -567,6 +576,10 @@ void SetupScreen::on_skip_clicked() {
     LOG_INFO("SetupScreen", "User skipped setup — launching app");
     if (timeout_timer_)
         timeout_timer_->stop();
+    if (net_meter_)
+        net_meter_->stop();
+    if (elapsed_timer_)
+        elapsed_timer_->stop();
     for (auto it = steps_.keyBegin(); it != steps_.keyEnd(); ++it)
         stop_pulse(*it);
     emit setup_complete();
@@ -594,7 +607,7 @@ void SetupScreen::prefill_completed_steps() {
     // check_status() slow path can spawn Python processes (up to ~15s on first run).
     // Run it on a background thread and post results back to the UI thread — P1/P8.
     QPointer<SetupScreen> self = this;
-    QtConcurrent::run([self]() {
+    (void)QtConcurrent::run([self]() {
         const auto status = python::PythonSetupManager::instance().check_status();
         QMetaObject::invokeMethod(self, [self, status]() {
             if (!self)

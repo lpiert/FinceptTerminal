@@ -22,7 +22,8 @@ class ForgotPasswordScreen : public QWidget {
     void paintEvent(QPaintEvent* event) override;
     void changeEvent(QEvent* event) override;
     /// Wipe email/OTP/new-password fields whenever the screen leaves the stack.
-    void hideEvent(QHideEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
+
   private:
     QStackedWidget* pages_ = nullptr;
 

@@ -1,9 +1,9 @@
-// ReportBuilderScreen.cpp 鈥?view onto ReportBuilderService.
+// ReportBuilderScreen.cpp — view onto ReportBuilderService.
 //
 // Core lifecycle: ctor, build_ui via build_toolbar, show/hide events,
 // save_state/restore_state. Other concerns:
-//   - ReportBuilderScreen_Components.cpp 鈥?panel toggles + component CRUD + service events
-//   - ReportBuilderScreen_Dialogs.cpp    鈥?Recent/Template/Theme/Metadata + file actions
+//   - ReportBuilderScreen_Components.cpp — panel toggles + component CRUD + service events
+//   - ReportBuilderScreen_Dialogs.cpp    — Recent/Template/Theme/Metadata + file actions
 //
 // All document state (components, metadata, theme, undo, autosave, recent
 // files) lives in the service. The screen renders that state, forwards user
@@ -92,7 +92,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
 
     vl->addWidget(splitter_, 1);
 
-    // 鈹€鈹€ Component toolbar wiring 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Component toolbar wiring ─────────────────────────────────────────
     connect(comp_toolbar_, &ComponentToolbar::new_report_requested, this, &ReportBuilderScreen::on_new);
     connect(comp_toolbar_, &ComponentToolbar::open_report_requested, this, &ReportBuilderScreen::on_open);
     connect(comp_toolbar_, &ComponentToolbar::recent_reports_requested, this,
@@ -104,7 +104,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
     connect(comp_toolbar_, &ComponentToolbar::font_changed, this,
             [this](const QString& family, int size, bool bold, bool italic) {
                 QTextCharFormat fmt;
-                fmt.setFontFamily(family);
+                fmt.setFontFamilies({family});
                 fmt.setFontPointSize(size);
                 fmt.setFontWeight(bold ? QFont::Bold : QFont::Normal);
                 fmt.setFontItalic(italic);
@@ -119,7 +119,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
     connect(comp_toolbar_, &ComponentToolbar::move_up, this, &ReportBuilderScreen::move_up_at);
     connect(comp_toolbar_, &ComponentToolbar::move_down, this, &ReportBuilderScreen::move_down_at);
 
-    // 鈹€鈹€ Properties panel wiring 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Properties panel wiring ───────────────────────────────────────────
     connect(properties_, &PropertiesPanel::content_changed, this, [](int idx, const QString& content) {
         const auto comps = Service::instance().components();
         if (idx < 0 || idx >= comps.size())
@@ -136,7 +136,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
                 const int comp_id = comps[idx].id;
                 const QString comp_type = comps[idx].type;
 
-                // 鈹€鈹€ stats_block: fetch real fundamentals via get_info 鈹€鈹€鈹€鈹€鈹€
+                // ── stats_block: fetch real fundamentals via get_info ─────
                 if (comp_type == "stats_block" && key == "fetch_ticker") {
                     QString sym = val;
                     auto loading_cfg = comps[idx].config;
@@ -161,20 +161,20 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
                                     auto comps2 = s.components();
                                     QStringList lines;
                                     auto fmt_dbl = [](double v, int dec = 2) -> QString {
-                                        return v != 0 ? QString::number(v, 'f', dec) : "鈥?;
+                                        return v != 0 ? QString::number(v, 'f', dec) : "—";
                                     };
                                     auto fmt_pct = [](double v) -> QString {
-                                        return v != 0 ? QString::number(v * 100, 'f', 2) + "%" : "鈥?;
+                                        return v != 0 ? QString::number(v * 100, 'f', 2) + "%" : "—";
                                     };
                                     auto fmt_mcap = [](double v) -> QString {
-                                        if (v <= 0) return QString("鈥?);
+                                        if (v <= 0) return QString("—");
                                         if (v >= 1e12) return QString::number(v / 1e12, 'f', 2) + "T";
                                         if (v >= 1e9) return QString::number(v / 1e9, 'f', 2) + "B";
                                         if (v >= 1e6) return QString::number(v / 1e6, 'f', 2) + "M";
                                         return QString::number(v, 'f', 0);
                                     };
                                     auto fmt_vol = [](double v) -> QString {
-                                        if (v <= 0) return QString("鈥?);
+                                        if (v <= 0) return QString("—");
                                         if (v >= 1e9) return QString::number(v / 1e9, 'f', 2) + "B";
                                         if (v >= 1e6) return QString::number(v / 1e6, 'f', 2) + "M";
                                         if (v >= 1e3) return QString::number(v / 1e3, 'f', 1) + "K";
@@ -215,7 +215,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
                     return;
                 }
 
-                // 鈹€鈹€ chart: hub-driven 6mo/1d history fetch 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+                // ── chart: hub-driven 6mo/1d history fetch ─────────────────
                 if (comp_type == "chart" && key == "fetch_history") {
                     QString sym = val;
                     auto cfg = comps[idx].config;
@@ -279,7 +279,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
                     return;
                 }
 
-                // 鈹€鈹€ market_data: hub-driven quote fetch 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+                // ── market_data: hub-driven quote fetch ───────────────────
                 if (comp_type == "market_data" && key == "status" && val == "loading") {
                     auto cfg = comps[idx].config;
                     QString sym = cfg.value("symbol", "");
@@ -338,7 +338,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
     connect(properties_, &PropertiesPanel::duplicate_requested, this, &ReportBuilderScreen::duplicate_at);
     connect(properties_, &PropertiesPanel::delete_requested, this, &ReportBuilderScreen::remove_component_at);
 
-    // 鈹€鈹€ Canvas drag-and-drop 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Canvas drag-and-drop ──────────────────────────────────────────────
     connect(canvas_, &DocumentCanvas::image_dropped, this, [this](const QString& path) {
         auto& svc = Service::instance();
         auto comps = svc.components();
@@ -362,7 +362,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
         }
     });
 
-    // 鈹€鈹€ Service signals 鈫?screen 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Service signals → screen ──────────────────────────────────────────
     connect(&Service::instance(), &Service::component_added, this, &ReportBuilderScreen::on_component_added);
     connect(&Service::instance(), &Service::component_updated, this, &ReportBuilderScreen::on_component_updated);
     connect(&Service::instance(), &Service::component_removed, this, &ReportBuilderScreen::on_component_removed);
@@ -372,7 +372,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
     connect(&Service::instance(), &Service::document_changed, this, &ReportBuilderScreen::on_document_changed);
     connect(&Service::instance(), &Service::document_loaded, this, &ReportBuilderScreen::on_document_loaded);
 
-    // First render 鈥?pull whatever the service already holds (autosave restore,
+    // First render — pull whatever the service already holds (autosave restore,
     // earlier LLM mutations while the screen wasn't open, etc.).
     rebind_from_service();
 }
@@ -382,7 +382,7 @@ ReportBuilderScreen::~ReportBuilderScreen() {
         s_current_screen.clear();
 }
 
-// 鈹€鈹€ Top toolbar 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ── Top toolbar ──────────────────────────────────────────────────────────────
 
 QWidget* ReportBuilderScreen::build_toolbar() {
     auto* bar = new QWidget(this);
@@ -409,7 +409,7 @@ QWidget* ReportBuilderScreen::build_toolbar() {
         return b;
     };
 
-    left_toggle_btn_ = make_panel_toggle("鈥?, tr("Collapse components panel  (Ctrl+B)"), "Ctrl+B");
+    left_toggle_btn_ = make_panel_toggle("‹", tr("Collapse components panel  (Ctrl+B)"), "Ctrl+B");
     connect(left_toggle_btn_, &QPushButton::clicked, this, &ReportBuilderScreen::on_toggle_left);
 
     toolbar_title_ = new QLabel(tr("REPORT BUILDER"));
@@ -453,13 +453,13 @@ QWidget* ReportBuilderScreen::build_toolbar() {
     preview_btn_ = make_btn(tr("Preview"));
     connect(preview_btn_, &QPushButton::clicked, this, &ReportBuilderScreen::on_preview);
 
-    right_toggle_btn_ = make_panel_toggle("鈥?, tr("Collapse properties panel  (Ctrl+Shift+B)"), "Ctrl+Shift+B");
+    right_toggle_btn_ = make_panel_toggle("›", tr("Collapse properties panel  (Ctrl+Shift+B)"), "Ctrl+Shift+B");
     connect(right_toggle_btn_, &QPushButton::clicked, this, &ReportBuilderScreen::on_toggle_right);
 
     return bar;
 }
 
-// 鈹€鈹€ Side-panel collapse 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ── Side-panel collapse ──────────────────────────────────────────────────────
 
 
 void ReportBuilderScreen::showEvent(QShowEvent* e) {
@@ -473,7 +473,7 @@ void ReportBuilderScreen::showEvent(QShowEvent* e) {
 
 void ReportBuilderScreen::hideEvent(QHideEvent* e) { QWidget::hideEvent(e); }
 
-// 鈹€鈹€ Live language switch 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ── Live language switch ─────────────────────────────────────────────────────
 
 void ReportBuilderScreen::changeEvent(QEvent* e) {
     if (e->type() == QEvent::LanguageChange)
@@ -498,7 +498,7 @@ void ReportBuilderScreen::retranslateUi() {
                                                        : tr("Collapse properties panel  (Ctrl+Shift+B)"));
 }
 
-// 鈹€鈹€ IStatefulScreen 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ── IStatefulScreen ──────────────────────────────────────────────────────────
 
 QVariantMap ReportBuilderScreen::save_state() const {
     return {

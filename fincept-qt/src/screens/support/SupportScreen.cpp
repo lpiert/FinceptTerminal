@@ -301,7 +301,8 @@ void SupportScreen::retranslateUi() {
 
         // Reload tickets so sidebar row text + the currently-shown detail
         // re-render with new translations. selected_ticket_id_ is preserved.
-        selected_ticket_id_ = saved_ticket;        load_tickets();
+        selected_ticket_id_ = saved_ticket;
+        load_tickets();
     }
 }
 

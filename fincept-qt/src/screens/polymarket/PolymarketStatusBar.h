@@ -7,7 +7,8 @@
 
 namespace fincept::screens::polymarket {
 
-/// Bottom status strip with view info, market count, selection, WS status.
+/// Bottom status strip with brand, view info, market count, selection,
+/// exchange-level status (Kalshi only), and WS status.
 class PolymarketStatusBar : public QWidget {
     Q_OBJECT
   public:
@@ -23,10 +24,10 @@ class PolymarketStatusBar : public QWidget {
     void set_brand(const QString& name, const QColor& accent);
 
     /// Exchange lifecycle (OPEN / PAUSED / CLOSED / MAINT). Empty string
-    /// hides the pill 鈥?use this for exchanges that don't expose status.
+    /// hides the pill — use this for exchanges that don't expose status.
     void set_exchange_status(const QString& status);
 
-    /// Human-readable "Opens at 鈥? / "Closed" hint pulled from the
+    /// Human-readable "Opens at …" / "Closed" hint pulled from the
     /// exchange schedule. Empty hides the label.
     void set_next_session(const QString& text);
 
@@ -40,9 +41,11 @@ class PolymarketStatusBar : public QWidget {
     QLabel* view_label_ = nullptr;
     QLabel* count_label_ = nullptr;
     QLabel* selected_label_ = nullptr;
+    QLabel* exchange_status_ = nullptr;
+    QLabel* next_session_ = nullptr;
     QLabel* ws_label_ = nullptr;
 
-    QColor accent_{0xD97706};  // default amber 鈥?Polymarket
+    QColor accent_{0xD97706};  // default amber — Polymarket
     bool ws_connected_ = false;
 };
 

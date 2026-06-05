@@ -51,7 +51,8 @@
 #include "services/prediction/fincept_internal/FinceptInternalAdapter.h"
 #include "services/prediction/kalshi/KalshiAdapter.h"
 #include "services/prediction/polymarket/PolymarketAdapter.h"
-#include "services/forum/ForumService.h"#include "services/relationship_map/RelationshipMapService.h"
+#include "services/forum/ForumService.h"
+#include "services/relationship_map/RelationshipMapService.h"
 #include "services/report_builder/ReportBuilderService.h"
 #include "datahub/DataHub.h"
 #include "datahub/TopicPolicy.h"
@@ -67,7 +68,8 @@
 #include "trading/DataStreamManager.h"
 #include "trading/ExchangeService.h"
 #include "trading/ExchangeSessionManager.h"
-#include "storage/HistoricalDataStore.h"#include "storage/repositories/NewsArticleRepository.h"
+#include "storage/HistoricalDataStore.h"
+#include "storage/repositories/NewsArticleRepository.h"
 #include "storage/repositories/SettingsRepository.h"
 #include "storage/sqlite/CacheDatabase.h"
 #include "storage/sqlite/Database.h"
@@ -102,6 +104,7 @@
 
 #include <algorithm>
 #include <memory>
+
 #include "app/InstanceLock.h"
 
 #ifdef Q_OS_WIN
@@ -255,7 +258,8 @@ int main(int argc, char* argv[]) {
     const auto lock_status = instance_lock.acquire(profile_key, QCoreApplication::arguments());
 
     // ── Secondary instance: argv was already shipped to the primary. Exit. ──
-    if (lock_status == fincept::InstanceLock::Status::Secondary) {#ifdef Q_OS_WIN
+    if (lock_status == fincept::InstanceLock::Status::Secondary) {
+#ifdef Q_OS_WIN
         // Grant the primary process permission to bring its new window to
         // the foreground — Windows blocks focus-steal without this. Pre-
         // SingleApplication this used app.primaryPid(); without that we
@@ -305,7 +309,8 @@ int main(int argc, char* argv[]) {
     // must be registered with the hub before the window paints. Everything
     // else is deferred to a single QTimer::singleShot(0) below — the event
     // loop runs that batch immediately after the first paint, so cold-start
-    // perceived latency drops without changing functional behavior.    fincept::services::NewsService::instance().ensure_registered_with_hub();
+    // perceived latency drops without changing functional behavior.
+    fincept::services::NewsService::instance().ensure_registered_with_hub();
     fincept::services::EconomicsService::instance().ensure_registered_with_hub();
     fincept::services::MacroCalendarService::instance().ensure_registered_with_hub();
     fincept::trading::DataStreamManager::instance().ensure_registered_with_hub();
@@ -554,7 +559,7 @@ int main(int argc, char* argv[]) {
         LOG_INFO("App", "Deferred service init complete");
     });
 
-    // Create all application directories under %LOCALAPPDATA%\com.fincept.terminal\
+    // Create all application directories under %LOCALAPPDATA%/com.fincept.terminal
     fincept::AppPaths::ensure_all();
 
     // ── One-time migration from legacy %APPDATA% location ─────────────────
@@ -904,6 +909,7 @@ int main(int argc, char* argv[]) {
             // primary window exists. Single source of truth — see
             // wire_app_lifecycle() at the top of this file.
             wire_app_lifecycle(app, instance_lock);
+
             if (!fincept::ai_chat::LlmService::instance().is_configured())
                 LOG_WARN("App",
                          "LLM provider not configured — AI chat will prompt user to configure Settings → LLM Config");
@@ -945,6 +951,7 @@ int main(int argc, char* argv[]) {
         const QList<int> saved_ids =
             fincept::SessionManager::instance().load_window_ids();
         const int max_windows = static_cast<int>(QGuiApplication::screens().size());
+
         if (saved_ids.isEmpty()) {
             auto* primary = new fincept::WindowFrame(0);
             primary->setAttribute(Qt::WA_DeleteOnClose);

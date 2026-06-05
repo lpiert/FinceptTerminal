@@ -4,8 +4,8 @@
 #include <QFrame>
 #include <QString>
 
-class QLineEdit;
-class QLabel;
+#include <QLabel>
+#include <QLineEdit>
 
 namespace fincept::ui {
 

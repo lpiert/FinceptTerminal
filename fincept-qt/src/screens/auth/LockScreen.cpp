@@ -23,20 +23,6 @@ static QString card_style() {
     return QString("background: %1; border: 1px solid %2;").arg(ui::colors::BG_SURFACE(), ui::colors::BORDER_DIM());
 }
 
-static QString input_style() {
-    return QString("QLineEdit {"
-                   "  background: %1; color: %2;"
-                   "  border: 1px solid %3;"
-                   "  padding: 6px 10px; font-size: 15px;"
-                   "  font-family: 'Consolas','Courier New',monospace;"
-                   "  selection-background-color: %4; selection-color: %5;"
-                   "}"
-                   "QLineEdit:focus { border: 1px solid %6; }"
-                   "QLineEdit::placeholder { color: %7; }")
-        .arg(ui::colors::BG_SURFACE(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM(), ui::colors::AMBER(),
-             ui::colors::BG_BASE(), ui::colors::BORDER_BRIGHT(), ui::colors::TEXT_DIM());
-}
-
 static QString pin_input_style() {
     return QString("QLineEdit {"
                    "  background: %1; color: %2;"
@@ -123,7 +109,8 @@ static void harden_pin_input(QLineEdit* edit) {
             QSignalBlocker b(edit);
             edit->setText(cleaned);
         }
-    });}
+    });
+}
 
 static QFrame* make_separator() {
     auto* sep = new QFrame;
@@ -208,7 +195,8 @@ void LockScreen::hideEvent(QHideEvent* e) {
         lockout_timer_->stop();
     if (setup_pin_input_) setup_pin_input_->clear();
     if (setup_confirm_input_) setup_confirm_input_->clear();
-    if (unlock_pin_input_) unlock_pin_input_->clear();}
+    if (unlock_pin_input_) unlock_pin_input_->clear();
+}
 
 void LockScreen::changeEvent(QEvent* event) {
     if (event->type() == QEvent::LanguageChange) {

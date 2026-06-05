@@ -13,7 +13,8 @@ inline QuoteTableWidget* create_commodities_widget(QWidget* parent = nullptr) {
         {"NG=F", "Nat Gas"}, {"HG=F", "Copper"}, {"PL=F", "Platinum"},  {"PA=F", "Palladium"},
     };
     const QString title = QCoreApplication::translate("fincept::screens::widgets::QuoteTableWidget", "COMMODITIES");
-    return new QuoteTableWidget(title, services::MarketDataService::commodity_symbols(), labels, 2,                                ui::colors::WARNING(), parent);
+    return new QuoteTableWidget(title, services::MarketDataService::commodity_symbols(), labels, 2,
+                                ui::colors::WARNING(), parent);
 }
 
 } // namespace fincept::screens::widgets

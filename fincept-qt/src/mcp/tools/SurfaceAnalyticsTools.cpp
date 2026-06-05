@@ -221,7 +221,7 @@ std::vector<ToolDef> get_surface_analytics_tools() {
                 QJsonArray types;
                 for (auto type : cat.types) types.append(surface::chart_type_name(type));
                 arr.append(QJsonObject{
-                    {"name", QString::fromUtf8(cat.name)},
+                    {"name", cat.name},
                     {"surface_types", types},
                     {"count", static_cast<int>(cat.types.size())},
                 });

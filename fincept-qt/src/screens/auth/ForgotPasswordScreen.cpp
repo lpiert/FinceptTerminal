@@ -8,6 +8,7 @@
 #include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
+#include <QHideEvent>
 #include <QPainter>
 #include <QVBoxLayout>
 
@@ -44,18 +45,6 @@ static QString btn_primary() {
                    "QPushButton:disabled { color: %4; background: %5; border-color: %6; }")
         .arg(ui::colors::AMBER(), ui::colors::AMBER_DIM(), ui::colors::BG_BASE(), ui::colors::TEXT_DIM(), ui::colors::BG_RAISED(),
              ui::colors::BORDER_DIM());
-}
-
-static QString btn_standard() {
-    return QString("QPushButton {"
-                   "  background: %1; color: %2;"
-                   "  border: 1px solid %3;"
-                   "  padding: 0 12px; font-size: 14px; font-weight: 700;"
-                   "  font-family: 'Consolas','Courier New',monospace;"
-                   "}"
-                   "QPushButton:hover { color: %4; background: %5; }")
-        .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_SECONDARY(), ui::colors::BORDER_DIM(), ui::colors::TEXT_PRIMARY(),
-             ui::colors::BG_HOVER());
 }
 
 static QString link_style() {
@@ -152,7 +141,8 @@ void ForgotPasswordScreen::changeEvent(QEvent* event) {
     }
     QWidget::changeEvent(event);
 }
-void ForgotPasswordScreen::paintEvent(QPaintEvent* /*event*/) {
+
+void ForgotPasswordScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter p(this);
     p.fillRect(rect(), QColor(ui::colors::BG_BASE()));
 

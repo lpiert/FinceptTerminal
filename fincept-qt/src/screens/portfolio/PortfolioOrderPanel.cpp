@@ -78,7 +78,7 @@ void PortfolioOrderPanel::build_ui() {
         setStyleSheet(QString("background:%1; border-left:2px solid %2;").arg(ui::colors::BG_SURFACE(), active_color));
         auto* title_w = findChild<QLabel*>();
         if (title_w && title_w->text() == "ORDER ENTRY") {
-            // skip 鈥?the title might have been found differently
+            // skip — the title might have been found differently
         }
     };
 
@@ -177,7 +177,7 @@ void PortfolioOrderPanel::update_display() {
         QString::number(holding_->quantity, 'f', holding_->quantity == std::floor(holding_->quantity) ? 0 : 2));
     mv_label_->setText(QString("%1 %2").arg(currency_).arg(QString::number(holding_->market_value, 'f', 2)));
 
-    // Update submit button text 鈥?text source keys match retranslateUi().
+    // Update submit button text — text source keys match retranslateUi().
     submit_btn_->setText(side_ == "BUY" ? tr("OPEN BUY ORDER") : tr("OPEN SELL ORDER"));
     const char* btn_color = (side_ == "BUY") ? ui::colors::POSITIVE : ui::colors::NEGATIVE;
     const char* btn_text_color = (side_ == "BUY") ? "#000" : "#fff";

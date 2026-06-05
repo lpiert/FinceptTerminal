@@ -27,7 +27,7 @@ void PortfolioDetailWrapper::build_ui() {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // 鈹€鈹€ Header bar (36px) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── Header bar (36px) ────────────────────────────────────────────────────
     auto* header = new QWidget(this);
     header->setFixedHeight(36);
     header->setStyleSheet(QString("background: qlineargradient(x1:0,x2:1, stop:0 %1, stop:1 %2);"
@@ -71,7 +71,7 @@ void PortfolioDetailWrapper::build_ui() {
 
     layout->addWidget(header);
 
-    // 鈹€鈹€ View stack 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    // ── View stack ───────────────────────────────────────────────────────────
     view_stack_ = new QStackedWidget;
     view_stack_->setStyleSheet(QString("background:%1;").arg(ui::colors::BG_BASE()));
     layout->addWidget(view_stack_, 1);
@@ -215,7 +215,7 @@ QWidget* PortfolioDetailWrapper::get_or_create_view(portfolio::DetailView view) 
             if (!current_snapshots_.isEmpty())
                 pv->set_snapshots(current_snapshots_);
             pv->set_metrics(current_metrics_);
-            // "Optimize for this return" 鈫?navigate to the Optimization sub-tab.
+            // "Optimize for this return" → navigate to the Optimization sub-tab.
             connect(pv, &PlanningView::optimize_for_return, this,
                     [this](double target) { emit optimize_requested(target); });
             widget = pv;
@@ -238,9 +238,9 @@ void PortfolioDetailWrapper::changeEvent(QEvent* event) {
 }
 
 void PortfolioDetailWrapper::retranslateUi() {
-    if (back_btn_)    back_btn_->setText(tr("鈫?BACK"));
+    if (back_btn_)    back_btn_->setText(tr("← BACK"));
     if (title_label_) title_label_->setText(view_title(current_view_));
-    // portfolio_label_ holds "馃捈 NAME | CURRENCY" 鈥?pure portfolio data, no
+    // portfolio_label_ holds "💼 NAME | CURRENCY" — pure portfolio data, no
     // translation needed.
 }
 

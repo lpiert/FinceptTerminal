@@ -15,6 +15,9 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "core/net/NetSpeedMeter.h"
+#include "ui/widgets/SpeedSparkline.h"
+
 namespace fincept::python {
 struct SetupProgress;
 }

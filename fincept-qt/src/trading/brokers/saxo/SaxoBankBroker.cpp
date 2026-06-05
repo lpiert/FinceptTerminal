@@ -3,6 +3,7 @@
 #include "trading/brokers/BrokerHttp.h"
 
 #include <QDateTime>
+#include <QTimeZone>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QUrlQuery>
@@ -125,7 +126,7 @@ QMap<QString, QString> SaxoBankBroker::auth_headers(const BrokerCredentials& cre
 TokenExchangeResponse SaxoBankBroker::exchange_token(const QString& api_key, const QString& api_secret,
                                                      const QString& auth_code) {
     if (auth_code.trimmed().isEmpty())
-        return {false, "", "", "", "Authorization code is required"};
+        return {false, "", "", "", "Authorization code is required", ""};
 
     // Try live token endpoint first; fall back to SIM if it fails
     // In practice user should specify sim vs live via auth_code prefix "sim:::code"
@@ -145,18 +146,18 @@ TokenExchangeResponse SaxoBankBroker::exchange_token(const QString& api_key, con
                               {{"Content-Type", "application/x-www-form-urlencoded"}, {"Accept", "application/json"}});
 
     if (!resp.success)
-        return {false, "", "", "", "Token exchange failed: " + resp.error};
+        return {false, "", "", "", "Token exchange failed: " + resp.error, ""};
 
     QJsonDocument doc = QJsonDocument::fromJson(resp.raw_body.toUtf8());
     if (!doc.isObject())
-        return {false, "", "", "", "Token exchange: invalid response"};
+        return {false, "", "", "", "Token exchange: invalid response", ""};
 
     QJsonObject obj = doc.object();
     QString access_token = obj.value("access_token").toString();
     QString refresh_token = obj.value("refresh_token").toString();
 
     if (access_token.isEmpty())
-        return {false, "", "", "", obj.value("error_description").toString("Token exchange failed")};
+        return {false, "", "", "", obj.value("error_description").toString("Token exchange failed"), ""};
 
     // Fetch AccountKey from /port/v1/clients/me
     QString base = use_sim ? BASE_SIM : BASE_LIVE;
@@ -174,7 +175,7 @@ TokenExchangeResponse SaxoBankBroker::exchange_token(const QString& api_key, con
     }
 
     // Pack refresh_token into additional field
-    return {true, access_token, refresh_token, account_key, ""};
+    return {true, access_token, refresh_token, account_key, "", ""};
 }
 
 // ---------- place_order ----------
@@ -588,7 +589,8 @@ ApiResponse<QVector<BrokerCandle>> SaxoBankBroker::get_history(const BrokerCrede
     // Saxo returns at most SAXO_MAX_COUNT samples per request (Mode=UpTo ends at Time, going
     // backward). The first-page count preserves the historical single-request behavior.
     static constexpr int SAXO_MAX_COUNT = 1200;
-    static constexpr int SAXO_MAX_PAGES = 30; // safety cap on backward paging iterations
+    static constexpr int SAXO_MAX_PAGES = 30; // safety cap on backward paging iterations
+
     // Fx*/Cfd* instruments report Ask/Bid OHLC (use mid); Stock/Etf/Bond/Future report plain
     // OHLC + Volume. Decide off the AssetType, falling back to the open==0.0 heuristic for "Stock".
     const bool ask_bid_asset = asset_type.startsWith("Fx", Qt::CaseInsensitive) ||

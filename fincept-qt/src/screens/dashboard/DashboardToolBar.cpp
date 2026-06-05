@@ -130,7 +130,8 @@ DashboardToolBar::DashboardToolBar(QWidget* parent) : QWidget(parent) {
     reset_btn_->setFixedHeight(20);
     reset_btn_->setObjectName("dtResetBtn");
     connect(reset_btn_, &QPushButton::clicked, this, &DashboardToolBar::reset_layout_clicked);
-    rl->addWidget(reset_btn_);
+    rl->addWidget(reset_btn_);
+
     hl->addWidget(right);
 
     connect(&ui::ThemeManager::instance(), &ui::ThemeManager::theme_changed, this,

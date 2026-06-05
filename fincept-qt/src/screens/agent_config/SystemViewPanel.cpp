@@ -122,7 +122,8 @@ void SystemViewPanel::build_ui() {
                                                "padding:4px 12px;font-size:10px;font-weight:600;letter-spacing:1px; }"
                                                "QPushButton:hover { background:%2; }")
                                            .arg(ui::colors::TEXT_SECONDARY(), ui::colors::BORDER_MED()));
-    connect(header_refresh_btn_, &QPushButton::clicked, this, [this]() {        data_loaded_ = false;
+    connect(header_refresh_btn_, &QPushButton::clicked, this, [this]() {
+        data_loaded_ = false;
         refresh_data();
     });
     header_row->addWidget(header_refresh_btn_);
@@ -187,7 +188,8 @@ QWidget* SystemViewPanel::build_llm_section() {
     auto* card = make_section_card(tr("CONFIGURED LLM PROVIDERS"), &llm_list_layout_, &llm_section_refresh_, tr("REFRESH"),
                                    &llm_section_title_);
     if (llm_section_refresh_) {
-        connect(llm_section_refresh_, &QPushButton::clicked, this, [this]() {            // Clear and reload LLM list
+        connect(llm_section_refresh_, &QPushButton::clicked, this, [this]() {
+            // Clear and reload LLM list
             while (llm_list_layout_->count() > 0) {
                 auto* item = llm_list_layout_->takeAt(0);
                 if (auto* w = item->widget())

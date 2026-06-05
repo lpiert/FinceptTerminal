@@ -1,4 +1,4 @@
-#include "core/session/SessionManager.h"
+﻿#include "core/session/SessionManager.h"
 
 #include "app/TerminalShell.h"
 #include "core/layout/LayoutTypes.h"
@@ -155,7 +155,8 @@ void SessionManager::save_window_flag(int window_id, const QString& name, bool v
 
 bool SessionManager::load_window_flag(int window_id, const QString& name, bool default_value) const {
     const QString key = QString("window_%1/flags/%2").arg(window_id).arg(name);
-    return settings_.value(key, default_value).toBool();}
+    return settings_.value(key, default_value).toBool();
+}
 
 void SessionManager::save_dock_layout(int window_id, const QByteArray& layout) {
     const QString prefix = QString("window_%1/").arg(window_id);
